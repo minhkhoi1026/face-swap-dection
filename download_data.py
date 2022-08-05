@@ -25,7 +25,7 @@ def download_dataset(dataset_name):
     
     api = KaggleApi()
     api.authenticate()
-    api.dataset_download_files('minhkhoi1026/casiafasd', path=os.path.join('dataset', "casia_fasd"), unzip=True)
+    api.dataset_download_files(url, path=os.path.join('dataset', "casia_fasd"), unzip=True)
 
 args = parse_args()
 download_dataset(args.dataset)
