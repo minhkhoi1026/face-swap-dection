@@ -13,6 +13,18 @@ This repo will be explained in 5 sections:
  5. Inference
 
 ## 1. Data
+Given one input image:
+1. Use MTCNN for face and landmark detection
+2. Align detected faces using affine transformation to size $128 \times 128$
+3. If in training mode, apply data augmentation including horizontal flipping, random rotation ($0$-$20$ degree), and random crop ($114 \times 114$).
+4. Generate MSR (multiscale retinex) image from RGB image
+
+Training params:
+- Momentum: $0.9$
+- Learning rate: $10^{-4}$
+- Batch size: $128$
+- Number of epoch to converge: $50$
+
 Training and testing images are stored in test and train folders respectively. The folder will be organised as such:
 videos
 
