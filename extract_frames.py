@@ -14,10 +14,11 @@ def parse_args():
     parser.add_argument("--dataset", 
                         choices = ["casia-fasd", "oulu-npu", "replay-attack"], 
                         help="specify dataset name for frame extraction", 
-                        default="casia-fasd",
-                        required=True)
+                        default="casia-fasd")
     parser.add_argument("--source", help="path of source data", required=True)
     parser.add_argument("--dest", help="path of destination frame store", required=True)
+    parser.add_argument("--sampling-ratio", help="specify a ratio x for frame sampling (0 < x <= 1)", required=True)
+    
     return parser.parse_args()
 
 def extract_faces(image, output_path, prefix):
@@ -31,14 +32,15 @@ def extract_faces(image, output_path, prefix):
         cv2.imwrite(os.path.join(output_path, '{}_{:02d}.png'.format(prefix, id)), crop_face)
 
 @jit
-def extract_frames(data_path, output_path, prefix_images, method='cv2'):
+def extract_frames(data_path, output_path, prefix_images, sampling_ratio):
     """Method to extract frames, either with ffmpeg or opencv."""
     os.makedirs(output_path, exist_ok=True)
     reader = cv2.VideoCapture(data_path)
     frame_num = 0
+    nframe = int(1 / sampling_ratio) # choose 1 frame per 1/x frames
     while reader.isOpened():
         success, image = reader.read()
-        if not success:
+        if not (success and frame_num % nframe == 0):
             break
         prefix_face_img = '{}_{:04d}'.format(prefix_images, frame_num)
         extract_faces(image, output_path, prefix_face_img) # extract faces from single image
@@ -46,7 +48,7 @@ def extract_frames(data_path, output_path, prefix_images, method='cv2'):
     reader.release()
 
 @jit
-def extract_individual(individual_path, output_path, individual_name):
+def extract_individual(individual_path, output_path, individual_name, sampling_ratio):
     """Extracts all videos file structure"""
     for video in os.listdir(individual_path):
         # prefix of image file name
@@ -60,12 +62,12 @@ def extract_individual(individual_path, output_path, individual_name):
         image_path = os.path.join(output_path, image_type)
         
         extract_frames(os.path.join(individual_path, video),
-                       image_path, prefix)
+                       image_path, prefix, sampling_ratio)
 
 @jit
-def extract_all_individual(source_path, dest_path):
+def extract_all_individual(source_path, dest_path, sampling_ratio):
     for individual in tqdm(os.listdir(source_path)):
-        extract_individual(os.path.join(source_path, individual), dest_path, individual)
+        extract_individual(os.path.join(source_path, individual), dest_path, individual, sampling_ratio)
 
 tf.debugging.set_log_device_placement(True)
 
@@ -73,5 +75,6 @@ args = parse_args()
 
 source_path = args.source
 dest_path = args.dest
+sampling_ratio = float(args.sampling_ratio)
 
-extract_all_individual(source_path, dest_path)
+extract_all_individual(source_path, dest_path, sampling_ratio)
