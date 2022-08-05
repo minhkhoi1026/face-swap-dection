@@ -36,15 +36,23 @@ def extract_frames(data_path, output_path, prefix_images, sampling_ratio):
     """Method to extract frames, either with ffmpeg or opencv."""
     os.makedirs(output_path, exist_ok=True)
     reader = cv2.VideoCapture(data_path)
-    frame_num = 0
+    frame_num = -1
     nframe = int(1 / sampling_ratio) # choose 1 frame per 1/x frames
     while reader.isOpened():
         success, image = reader.read()
-        if not (success and frame_num % nframe == 0):
+        
+        # only process success frame
+        if not success:
             break
+        
+        # uniform sampling
+        frame_num += 1
+        if not frame_num % nframe == 0:
+            continue
+        
+        # extract faces from frame
         prefix_face_img = '{}_{:04d}'.format(prefix_images, frame_num)
         extract_faces(image, output_path, prefix_face_img) # extract faces from single image
-        frame_num += 1
     reader.release()
 
 @jit
@@ -76,5 +84,4 @@ args = parse_args()
 source_path = args.source
 dest_path = args.dest
 sampling_ratio = float(args.sampling_ratio)
-
 extract_all_individual(source_path, dest_path, sampling_ratio)
