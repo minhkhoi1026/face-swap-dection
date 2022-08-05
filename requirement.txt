@@ -7,3 +7,4 @@ matplotlib
 keras-rectified-adam
 numpy
 sklearn
+numba
