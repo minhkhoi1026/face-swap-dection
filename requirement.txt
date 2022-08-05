@@ -1,0 +1,9 @@
+python-dotenv
+tqdm
+opencv-python
+tensorflow_addons
+tensorflow
+matplotlib
+keras-rectified-adam
+numpy
+sklearn
