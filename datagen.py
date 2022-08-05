@@ -5,6 +5,7 @@ import random
 import matplotlib.pyplot as plt
 from keras.preprocessing.image import ImageDataGenerator
 from retinex import automatedMSRCR
+
 class DataGenerator(keras.utils.Sequence):
 
     def __init__(self, list_IDs, labels, batch_size=32, dim=(32, 32),

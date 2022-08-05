@@ -5,8 +5,20 @@ from tqdm import tqdm
 from mtcnn import MTCNN
 import tensorflow as tf
 import argparse
+from numba import jit
 
 detector = MTCNN()
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", 
+                        choices = ["casia-fasd", "oulu-npu", "replay-attack"], 
+                        help="specify dataset name for frame extraction", 
+                        default="casia-fasd",
+                        required=True)
+    parser.add_argument("--source", help="path of source data", required=True)
+    parser.add_argument("--dest", help="path of destination frame store", required=True)
+    return parser.parse_args()
 
 def extract_faces(image, output_path, prefix):
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -18,6 +30,7 @@ def extract_faces(image, output_path, prefix):
         crop_face = cv2.cvtColor(img[y:y+h, x:x+w], cv2.COLOR_BGR2RGB)
         cv2.imwrite(os.path.join(output_path, '{}_{:02d}.png'.format(prefix, id)), crop_face)
 
+@jit
 def extract_frames(data_path, output_path, prefix_images, method='cv2'):
     """Method to extract frames, either with ffmpeg or opencv."""
     os.makedirs(output_path, exist_ok=True)
@@ -31,7 +44,8 @@ def extract_frames(data_path, output_path, prefix_images, method='cv2'):
         extract_faces(image, output_path, prefix_face_img) # extract faces from single image
         frame_num += 1
     reader.release()
-    
+
+@jit
 def extract_individual(individual_path, output_path, individual_name):
     """Extracts all videos file structure"""
     for video in os.listdir(individual_path):
@@ -48,13 +62,16 @@ def extract_individual(individual_path, output_path, individual_name):
         extract_frames(os.path.join(individual_path, video),
                        image_path, prefix)
 
-def extract_all_individual(data_path, output_path):
-    for individual in tqdm(os.listdir(data_path)):
-        extract_individual(os.path.join(data_path, individual), output_path, individual)
-
-
+@jit
+def extract_all_individual(source_path, dest_path):
+    for individual in tqdm(os.listdir(source_path)):
+        extract_individual(os.path.join(source_path, individual), dest_path, individual)
 
 tf.debugging.set_log_device_placement(True)
 
-extract_all_individual(os.path.join("dataset", "casia_fasd", "train_release"), "train")
-extract_all_individual(os.path.join("dataset", "casia_fasd", "test_release"), "test")
+args = parse_args()
+
+source_path = args.source
+dest_path = args.dest
+
+extract_all_individual(source_path, dest_path)

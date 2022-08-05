@@ -4,8 +4,8 @@ import tqdm
 import numpy as np
 from sklearn.metrics import roc_curve
 
-from datagen import DataGenerator
-from attention import attention_model
+from data.datagen import DataGenerator
+from models.attention import attention_model
 
 def parse_args():
     parser = argparse.ArgumentParser()
