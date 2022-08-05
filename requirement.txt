@@ -1,10 +1,12 @@
 python-dotenv
+kaggle
 tqdm
-opencv-python
-tensorflow_addons
-tensorflow
-matplotlib
-keras-rectified-adam
 numpy
+matplotlib
 sklearn
 numba
+opencv-python
+tensorflow
+tensorflow-probability
+tensorflow_addons
+keras-radam
