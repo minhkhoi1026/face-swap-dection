@@ -2,6 +2,7 @@
 test/
 train/
 dataset/
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -75,6 +75,11 @@ The Attention-based Fusion stated in the paper can be found in `attention.py`. T
 
 <img src="./img/attention.PNG" width="1000">
 
+Example training command:
+```
+python train.py --bs 128 --dim 128 --backbone Xception
+```
+
 ## Test
 To test the model using your webcam, run the following command: `python test.py`
 

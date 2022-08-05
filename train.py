@@ -3,68 +3,72 @@ warnings.filterwarnings('ignore')
 
 from keras_radam import RAdam
 from tensorflow_addons.optimizers import Lookahead
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
 import os
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 import argparse
 
 from models.attention import attention_model
 from datagen import DataGenerator
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--bs", help="batch size", required=True)
-parser.add_argument("--dim", help="dim", required=True)
-parser.add_argument("--backbone", help="backbone architecture", required=True)
-args = parser.parse_args()
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--bs", help="batch size", required=True)
+    parser.add_argument("--dim", help="dim", required=True)
+    parser.add_argument("--backbone", help="backbone architecture", required=True)
+    return parser.parse_args()
 
+def load_dataset_to_generator(data_path, bs, dim, type_gen):
+    # generate paths of image
+    image_paths = []
+    for folder in [os.path.join(data_path, "fake"), os.path.join(data_path, "real")]:
+        for path in os.listdir(folder):
+            image_paths.append(os.path.join(folder, path))
+            
+    # generate label
+    labels = {}
+    for path in tqdm(image_paths):
+        labels[path] = int(os.path.dirname(path) == 'real')
+    return DataGenerator(image_paths, labels, batch_size=bs, dim=dim, type_gen=type_gen)
+
+# get command line arguments
+args = parse_args()
 bs = int(args.bs)
 dim = (int(args.dim),int(args.dim))
 
-train_images = []
-for folder in [os.path.join("train", "fake"), os.path.join("train", "real")]:
-	for image in os.listdir(folder):
-		train_images.append(os.path.join(folder, image))
+# create data generator
+print("---------CREATE DATA GENERATOR---------")
+train_gen = load_dataset_to_generator("train", bs, dim, "train")
+val_gen = load_dataset_to_generator("test", bs, dim, "test")
 
-train_labels = {}
-for image in tqdm(train_images):
-    if os.path.dirname(image) == 'real':
-        train_labels[image] = 0
-    else:
-        train_labels[image] = 1
-
-val_images = []
-for folder in [os.path.join("test", "fake"), os.path.join("test", "real")]:
-	for image in os.listdir(folder):
-		val_images.append(os.path.join(folder, image))
-
-val_labels = {}
-for image in tqdm(val_images):
-    if os.path.dirname(image) == 'real':
-        val_labels[image] = 0
-    else:
-        val_labels[image] = 1
-
-train_gen = DataGenerator(train_images, train_labels, batch_size=bs, dim=dim, type_gen='train')
-val_gen = DataGenerator(val_images, val_labels, batch_size=bs, dim=dim, type_gen='test')
-
-X, Y = train_gen[0]
-
+# compile model for training
+print("---------COMPILE MODEL---------")
 model = attention_model(1, backbone=args.backbone, shape=(dim[0], dim[1], 3))
-
 optimizer = Lookahead(RAdam())
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
+print("---------INIT CALLBACK---------")
+# early stopping callback, stop as long as the validation loss does not decrease anymore
+early_stopping = EarlyStopping(monitor='val_loss', patience=2)
+
+# CSV Logger callback to save train history
+os.makedirs("logs", exist_ok=True)
+logger_filepath = os.path.join("logs", "training.log")
+csv_logger = CSVLogger(logger_filepath)
+
+# checkpoint callback, save weight every epoch
+os.makedirs("weights", exist_ok=True)
+checkpoint_filepath = os.path.join("weights", "weight-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}.hdf5")
 validate_freq = 1
-start_epoch = 0
-filepath = os.path.join("weights", "weight-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}.hdf5")
-checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=False, period=validate_freq)
+checkpoint = ModelCheckpoint(checkpoint_filepath, monitor='val_accuracy', verbose=1, save_best_only=False, period=validate_freq)
+
+# reduce learning rate callback, decrease learning rate if val loss does not decrease
 reduce_lr = ReduceLROnPlateau(monitor='val_loss',factor=0.95, patience=2, verbose=1, mode='auto')
 
-callbacks_list = [checkpoint, reduce_lr]
-
 # Train model on dataset
-print("FITTING")
+print("---------FITTING---------")
+start_epoch = 0
+callbacks_list = [early_stopping, checkpoint, csv_logger, reduce_lr]
 model.fit_generator(generator=train_gen,
                     validation_data=val_gen,
                     epochs=90,
