@@ -4,6 +4,7 @@ import cv2
 from tqdm import tqdm
 from mtcnn import MTCNN
 import tensorflow as tf
+import argparse
 
 detector = MTCNN()
 
@@ -51,6 +52,9 @@ def extract_all_individual(data_path, output_path):
     for individual in tqdm(os.listdir(data_path)):
         extract_individual(os.path.join(data_path, individual), output_path, individual)
 
+
+
 tf.debugging.set_log_device_placement(True)
 
+extract_all_individual(os.path.join("dataset", "casia_fasd", "train_release"), "train")
 extract_all_individual(os.path.join("dataset", "casia_fasd", "test_release"), "test")
