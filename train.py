@@ -16,6 +16,8 @@ def parse_args():
     parser.add_argument("--bs", help="batch size", required=True)
     parser.add_argument("--dim", help="dim", required=True)
     parser.add_argument("--backbone", help="backbone architecture", required=True)
+    parser.add_argument("--num-workers", help="number of worker", default=1, required=False)
+    
     return parser.parse_args()
 
 def load_dataset_to_generator(data_path, bs, dim, type_gen):
@@ -35,6 +37,7 @@ def load_dataset_to_generator(data_path, bs, dim, type_gen):
 args = parse_args()
 bs = int(args.bs)
 dim = (int(args.dim),int(args.dim))
+num_workers = int(args.num_workers)
 
 # create data generator
 print("---------CREATE DATA GENERATOR---------")
@@ -76,6 +79,6 @@ model.fit_generator(generator=train_gen,
                     callbacks=callbacks_list,
                     initial_epoch=start_epoch,
                     validation_freq=validate_freq,
-                    max_queue_size=20,
-                    workers = 8,
+                    max_queue_size=10,
+                    workers=num_workers,
                     )
