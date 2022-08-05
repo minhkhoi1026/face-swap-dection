@@ -12,7 +12,7 @@ This repo will be explained in 5 sections:
  4. Train
  5. Inference
 
-## 1. Data
+## Data
 Given one input image:
 1. Use MTCNN for face and landmark detection
 2. Align detected faces using affine transformation to size $128 \times 128$
@@ -28,6 +28,7 @@ Training params:
 Training and testing images are stored in test and train folders respectively. The folder will be organised as such:
 videos
 
+```
     train
 	    └── real
 	    	    └── real1.jpg
@@ -40,8 +41,9 @@ videos
     test
 	    └── real
 	    └── fake
+```
 
-## 2. CNN Backbone
+## CNN Backbone
 
 As shown in the image below, a CNN is needed in the MSR and RGB stream. I have decided to proceed with MobileNetV3 taken from [https://github.com/xiaochus/MobileNetV3](https://github.com/xiaochus/MobileNetV3) due to its lightweight architecture.
 
@@ -49,7 +51,7 @@ As shown in the image below, a CNN is needed in the MSR and RGB stream. I have d
 
 This backbone can be substituted with any of the backbones here: [https://keras.io/api/applications/](https://keras.io/api/applications/).
 
-## 3. Retinex Function
+## Retinex Function
 
 The Multi-Scale Retinex (MSR) functions have been taken from: [https://github.com/dongb5/Retinex](https://github.com/dongb5/Retinex). The core idea behind the use of MSR is written in the paper: 
 
@@ -57,7 +59,7 @@ The Multi-Scale Retinex (MSR) functions have been taken from: [https://github.co
 > component, and the illuminationremoved reflectance component is used
 > for liveness detection
 
-## 4. Train
+## Train
 
 Model structure:
 
@@ -73,5 +75,11 @@ The Attention-based Fusion stated in the paper can be found in `attention.py`. T
 
 <img src="./img/attention.PNG" width="1000">
 
-## 5. Test
+## Test
 To test the model using your webcam, run the following command: `python test.py`
+
+## Slurm
+For those who run script in batch system:
+- Extract frame from dataset: `sbatch extract_train.slurm` and `sbatch extract_test.slurm`
+- See job queue: `squeue --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R" --me`
+- Cancel a job: `scancel <job-id>`
