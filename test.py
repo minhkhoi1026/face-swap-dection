@@ -7,14 +7,14 @@ from cv2 import rectangle
 import cv2
 from keras.models import load_model
 from retinex import automatedMSRCR
-from attention import attention_model
+from models.attention import attention_model
 import numpy as np
 import time
 cap = cv2.VideoCapture(0)
 
 classifier = CascadeClassifier('haarcascade_frontalface_default.xml')
 model = attention_model(1, backbone='MobileNetV3', shape=(299, 299, 3))
-model.load_weights('ver-2-weight-63-1.00-0.88-0.00179.hdf5')
+model.load_weights('weights/ver-2-weight-63-1.00-0.88-0.00179.hdf5')
 print(model.summary())
 
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')

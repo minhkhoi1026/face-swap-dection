@@ -45,7 +45,7 @@ videos
 
 As shown in the image below, a CNN is needed in the MSR and RGB stream. I have decided to proceed with MobileNetV3 taken from [https://github.com/xiaochus/MobileNetV3](https://github.com/xiaochus/MobileNetV3) due to its lightweight architecture.
 
-<img src="network.PNG" width="1000">
+<img src="./img/network.PNG" width="1000">
 
 This backbone can be substituted with any of the backbones here: [https://keras.io/api/applications/](https://keras.io/api/applications/).
 
@@ -59,15 +59,19 @@ The Multi-Scale Retinex (MSR) functions have been taken from: [https://github.co
 
 ## 4. Train
 
+Model structure:
+
+<img src="./img/model.png" width="1000">
+
 To carry out training, a custom DataGenerator is needed as well as the Attention layer used in the paper. 
 
 The custom DataGenerator is found in `datagen.py` and it generates batches of images in the format **[BxHxWxC RGB image, BxHxWxC MSR image]** as shown in the image below.
 
-<img src="datagen.png" width="1000">
+<img src="./img/datagen.png" width="1000">
 
 The Attention-based Fusion stated in the paper can be found in `attention.py`. The inner working of the layer can be seen in the image below.
 
-<img src="attention.PNG" width="1000">
+<img src="./img/attention.PNG" width="1000">
 
 ## 5. Test
 To test the model using your webcam, run the following command: `python test.py`

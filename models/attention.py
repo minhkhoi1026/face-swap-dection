@@ -1,15 +1,14 @@
 import warnings
 warnings.filterwarnings("ignore")
 
-
 from keras.models import Model
 from keras.layers import Dense, GlobalAveragePooling2D, Input, Dot, \
     Add, Lambda, Layer, Multiply, Concatenate, Softmax, Flatten
 from keras.applications.xception import Xception
 import keras.backend as K
 
-from mobilenet_v3_large import MobileNetV3_Large
-from mobilenet_v3_small import MobileNetV3_Small
+from .mobilenet_v3_large import MobileNetV3_Large
+from .mobilenet_v3_small import MobileNetV3_Small
 
 
 class Attention(Layer):
@@ -103,8 +102,9 @@ def attention_model(classes, backbone = 'MobileNetV3_Small', shape=(256, 256, 3)
     # print(output.shape)
     return Model(inputs=[input1, input2], outputs=output)
 
-model = attention_model(2)
-print(model.summary())
-from keras.utils import plot_model
-plot_model(model, 'model.png', show_shapes=True)
+if __name__ == "__main__":
+    model = attention_model(2)
+    print(model.summary())
+    from keras.utils import plot_model
+    plot_model(model, 'model.png', show_shapes=True)
 
