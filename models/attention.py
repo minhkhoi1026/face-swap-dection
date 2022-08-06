@@ -78,9 +78,6 @@ def attention_model(classes, backbone = 'MobileNetV3_Small', shape=(256, 256, 3)
         stream1 = MobileNetV3_Small(shape, classes).build()
         stream2 = MobileNetV3_Small(shape, classes).build()
 
-    stream1._name = 'stream1'
-    stream2._name = 'stream2'
-
     input1 = Input(shape)
     input2 = Input(shape)
     output1 = stream1(input1)
