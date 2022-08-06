@@ -82,7 +82,9 @@ def attention_model(classes, backbone = 'MobileNetV3_Small', shape=(256, 256, 3)
     input2 = Input(shape)
     output1 = stream1(input1)
     output2 = stream2(input2)
-    
+   
+    stream1.name = "stream1"
+    stream2.name = "stream2"
     if backbone == 'Xception':
         output1 = GlobalAveragePooling2D(name='avg_pool_1')(output1)
         output2 = GlobalAveragePooling2D(name='avg_pool_2')(output2)

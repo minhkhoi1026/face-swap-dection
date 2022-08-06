@@ -1,8 +1,7 @@
 import warnings
 warnings.filterwarnings('ignore')
 
-from keras_radam import RAdam
-from tensorflow_addons.optimizers import Lookahead
+from tensorflow_addons.optimizers import Lookahead, RectifiedAdam
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
 import os
 from tqdm import tqdm
@@ -47,7 +46,7 @@ val_gen = load_dataset_to_generator("test", bs, dim, "test")
 # compile model for training
 print("---------COMPILE MODEL---------")
 model = attention_model(1, backbone=args.backbone, shape=(dim[0], dim[1], 3))
-optimizer = Lookahead(RAdam())
+optimizer = Lookahead(RectifiedAdam())
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
 print("---------INIT CALLBACK---------")
