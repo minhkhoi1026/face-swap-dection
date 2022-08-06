@@ -69,8 +69,8 @@ class Attention(Layer):
 
 def attention_model(classes, backbone = 'MobileNetV3_Small', shape=(256, 256, 3)):
     if backbone == 'Xception':
-        stream1 = Xception(include_top=False, weights='imagenet', input_shape=shape, name="stream1")
-        stream2 = Xception(include_top=False, weights='imagenet', input_shape=shape, name="stream2")
+        stream1 = Xception(include_top=False, weights='imagenet', input_shape=shape)
+        stream2 = Xception(include_top=False, weights='imagenet', input_shape=shape)
     elif backbone == 'MobileNetV3_Large':
         stream1 = MobileNetV3_Large(shape, classes).build()
         stream2 = MobileNetV3_Large(shape, classes).build()
