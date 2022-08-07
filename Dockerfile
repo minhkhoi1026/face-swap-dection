@@ -50,9 +50,10 @@ ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
 
-# # # Install repo dependencies 
+# # # Install repo dependencies
+SHELL ["/bin/bash", "--login", "-c"] 
 COPY requirements.txt $WORKDIR
-RUN conda init bash && conda activate && \
+RUN conda init bash && source ~/.bashrc && conda activate && \
     python -m pip install -r requirements.txt
 
 USER $USERNAME
