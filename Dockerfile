@@ -53,8 +53,7 @@ ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
 # # # Install repo dependencies
 SHELL ["/bin/bash", "--login", "-c"] 
 COPY requirements.txt $WORKDIR
-RUN conda init bash && source ~/.bashrc && conda activate && \
+RUN conda init bash && source ~/.bashrc && \
     python -m pip install -r requirements.txt
 
 USER $USERNAME
-RUN conda init bash 
