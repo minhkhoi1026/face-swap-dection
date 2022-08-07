@@ -65,12 +65,12 @@ validate_freq = 1
 checkpoint = ModelCheckpoint(checkpoint_filepath, monitor='val_accuracy', verbose=1, save_best_only=False, period=validate_freq)
 
 # reduce learning rate callback, decrease learning rate if val loss does not decrease
-reduce_lr = ReduceLROnPlateau(monitor='val_loss',factor=0.95, patience=2, verbose=1, mode='auto')
+# reduce_lr = ReduceLROnPlateau(monitor='val_loss',factor=0.95, patience=2, verbose=1, mode='auto')
 
 # Train model on dataset
 print("---------FITTING---------")
 start_epoch = 0
-callbacks_list = [early_stopping, checkpoint, csv_logger, reduce_lr]
+callbacks_list = [early_stopping, checkpoint, csv_logger]
 model.fit_generator(generator=train_gen,
                     validation_data=val_gen,
                     epochs=90,
