@@ -14,19 +14,20 @@ from src.models.attention import attention_model
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--weight", help="path to model's pretrained weight", required=True)
-    parser.add_argument("--cascade-classifier", help="path to cascade classifier", require=True)
+    parser.add_argument("--cascade-classifier", help="path to cascade classifier", required=True)
     return parser.parse_args()
 
 args = parse_args()
 weigth_path = args.weight
 cascade_classifier_path = args.cascade_classifier
+dim = 128
+cnn_model = "Xception"
 
 cap = cv2.VideoCapture(0)
 
 classifier = CascadeClassifier(cascade_classifier_path)
-model = attention_model(1, backbone='MobileNetV3', shape=(299, 299, 3))
+model = attention_model(1, backbone=cnn_model, shape=(dim, dim, 3))
 model.load_weights(weigth_path)
-print(model.summary())
 
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')
 out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640,480))
@@ -41,9 +42,8 @@ while True:
         x, y = int(x-0.0*width), int(y-0.2*height)
 
         img = frame[y:y2, x:x2]
-        print(type(img))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = cv2.resize(img, (299, 299))
+        img = cv2.resize(img, (dim, dim))
 
         new_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         new_img = np.expand_dims(new_img, -1)
