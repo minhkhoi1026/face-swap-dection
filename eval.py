@@ -26,7 +26,7 @@ batch_size = int(args.bs)
 dim = int(args.dim)
 
 test_image_paths = load_image_file_paths("test")
-test_labels = generate_label_from_path(test_image_paths)
+test_labels = list(generate_label_from_path(test_image_paths).values())
 test_generator = DataGenerator(test_image_paths, test_labels, batch_size=batch_size, dim=(dim, dim), type_gen='test')
 
 model = attention_model(1, backbone=args.backbone, shape=(dim, dim, 3))
