@@ -2,9 +2,8 @@ import argparse
 import numpy as np
 from sklearn.metrics import roc_curve
 
-from src.data.datagen import DataGenerator
+from src.data.datagen import DataGenerator, load_dataset_to_generator, load_image_file_paths, generate_label_from_path
 from src.models.attention import attention_model
-from src.data.datagen import load_image_file_paths, generate_label_from_path
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -26,7 +25,7 @@ batch_size = int(args.bs)
 dim = int(args.dim)
 
 test_image_paths = load_image_file_paths("test")
-test_labels = list(generate_label_from_path(test_image_paths).values())
+test_labels = generate_label_from_path(test_image_paths)
 test_generator = DataGenerator(test_image_paths, test_labels, batch_size=batch_size, dim=(dim, dim), type_gen='test')
 
 model = attention_model(1, backbone=args.backbone, shape=(dim, dim, 3))
@@ -34,4 +33,4 @@ test_preds = model.predict(test_generator)
 
 # threshold, err = calculate_err(test_preds, test_labels)
 
-print(calculate_err(test_preds, test_labels))
+print(calculate_err(test_preds, list(test_labels.values())))
