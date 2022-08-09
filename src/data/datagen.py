@@ -4,7 +4,7 @@ import cv2
 import random
 import matplotlib.pyplot as plt
 from keras.preprocessing.image import ImageDataGenerator
-from retinex import automatedMSRCR
+from src.utils.retinex import automatedMSRCR
 
 class DataGenerator(keras.utils.Sequence):
 

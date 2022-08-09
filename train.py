@@ -8,7 +8,7 @@ from tqdm import tqdm
 import argparse
 
 from models.attention import attention_model
-from datagen import DataGenerator
+from src.data.datagen import DataGenerator
 
 def parse_args():
     parser = argparse.ArgumentParser()

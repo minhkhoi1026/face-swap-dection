@@ -3,7 +3,7 @@ test/
 train/
 dataset/
 logs/
-weights/*
+weights/train*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

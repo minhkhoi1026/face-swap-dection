@@ -2,13 +2,13 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from keras.models import Model
-from keras.layers import Dense, GlobalAveragePooling2D, Input, Dot, \
-    Add, Lambda, Layer, Multiply, Concatenate, Softmax, Flatten
+from keras.layers import Dense, GlobalAveragePooling2D, Input, \
+    Add, Lambda, Layer, Concatenate, Softmax
 from keras.applications.xception import Xception
 import keras.backend as K
 
-from .mobilenet_v3_large import MobileNetV3_Large
-from .mobilenet_v3_small import MobileNetV3_Small
+from src.models.mobilenet_v3_large import MobileNetV3_Large
+from src.models.mobilenet_v3_small import MobileNetV3_Small
 
 
 class Attention(Layer):
@@ -18,7 +18,6 @@ class Attention(Layer):
         super(Attention, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        # print(input_shape)
         self.q = self.add_weight(name='q',
                                  shape=(1, self.size),
                                  initializer='ones',
