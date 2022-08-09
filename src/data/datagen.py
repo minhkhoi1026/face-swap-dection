@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import keras
 import cv2
 import random
@@ -102,3 +103,20 @@ class DataGenerator(keras.utils.Sequence):
 
         return X, Y
 
+def load_dataset_to_generator(data_path, bs, dim, type_gen):
+    image_paths = load_image_file_paths(data_path)
+    labels = generate_label_from_path(image_paths)
+    return DataGenerator(image_paths, labels, batch_size=bs, dim=dim, type_gen=type_gen)
+
+def load_image_file_paths(data_path):
+    image_paths = []
+    for folder in [os.path.join(data_path, "fake"), os.path.join(data_path, "real")]:
+        for path in os.listdir(folder):
+            image_paths.append(os.path.join(folder, path))
+    return image_paths
+
+def generate_label_from_path(image_paths):
+    labels = {}
+    for path in image_paths:
+        labels[path] = int(os.path.basename(os.path.dirname(path)) == 'real')
+    return labels

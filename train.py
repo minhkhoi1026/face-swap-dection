@@ -4,11 +4,10 @@ warnings.filterwarnings('ignore')
 from tensorflow_addons.optimizers import Lookahead, RectifiedAdam
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
 import os
-from tqdm import tqdm
 import argparse
 
-from models.attention import attention_model
-from src.data.datagen import DataGenerator
+from src.models.attention import attention_model
+from src.data.datagen import load_dataset_to_generator
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -18,19 +17,6 @@ def parse_args():
     parser.add_argument("--num-workers", help="number of worker", default=1, required=False)
     
     return parser.parse_args()
-
-def load_dataset_to_generator(data_path, bs, dim, type_gen):
-    # generate paths of image
-    image_paths = []
-    for folder in [os.path.join(data_path, "fake"), os.path.join(data_path, "real")]:
-        for path in os.listdir(folder):
-            image_paths.append(os.path.join(folder, path))
-            
-    # generate label
-    labels = {}
-    for path in tqdm(image_paths):
-        labels[path] = int(os.path.basename(os.path.dirname(path)) == 'real')
-    return DataGenerator(image_paths, labels, batch_size=bs, dim=dim, type_gen=type_gen)
 
 # get command line arguments
 args = parse_args()
