@@ -29,7 +29,7 @@ def load_dataset_to_generator(data_path, bs, dim, type_gen):
     # generate label
     labels = {}
     for path in tqdm(image_paths):
-        labels[path] = int(os.path.dirname(path) == 'real')
+        labels[path] = int(os.path.basename(os.path.dirname(path)) == 'real')
     return DataGenerator(image_paths, labels, batch_size=bs, dim=dim, type_gen=type_gen)
 
 # get command line arguments
@@ -70,7 +70,7 @@ checkpoint = ModelCheckpoint(checkpoint_filepath, monitor='val_accuracy', verbos
 # Train model on dataset
 print("---------FITTING---------")
 start_epoch = 0
-callbacks_list = [early_stopping, checkpoint, csv_logger]
+callbacks_list = [checkpoint, csv_logger]
 model.fit_generator(generator=train_gen,
                     validation_data=val_gen,
                     epochs=90,
