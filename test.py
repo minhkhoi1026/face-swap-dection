@@ -1,20 +1,31 @@
 import warnings
 warnings.filterwarnings('ignore')
 
-from cv2 import imread, imshow, waitKey, destroyAllWindows
+import argparse
+from cv2 import imshow
 from cv2 import CascadeClassifier
 from cv2 import rectangle
 import cv2
-from keras.models import load_model
-from retinex import automatedMSRCR
-from models.attention import attention_model
 import numpy as np
-import time
+
+from src.utils.retinex import automatedMSRCR
+from src.models.attention import attention_model
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--weight", help="path to model's pretrained weight", required=True)
+    parser.add_argument("--cascade-classifier", help="path to cascade classifier", require=True)
+    return parser.parse_args()
+
+args = parse_args()
+weigth_path = args.weight
+cascade_classifier_path = args.cascade_classifier
+
 cap = cv2.VideoCapture(0)
 
-classifier = CascadeClassifier('haarcascade_frontalface_default.xml')
+classifier = CascadeClassifier(cascade_classifier_path)
 model = attention_model(1, backbone='MobileNetV3', shape=(299, 299, 3))
-model.load_weights('weights/ver-2-weight-63-1.00-0.88-0.00179.hdf5')
+model.load_weights(weigth_path)
 print(model.summary())
 
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')
