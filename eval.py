@@ -29,8 +29,9 @@ test_labels = generate_label_from_path(test_image_paths)
 test_generator = DataGenerator(test_image_paths, test_labels, batch_size=batch_size, dim=(dim, dim), type_gen='test')
 
 model = attention_model(1, backbone=args.backbone, shape=(dim, dim, 3))
-test_preds = model.predict(test_generator)
+test_preds = np.flatten(model.predict(test_generator))
+print(np.isnan(test_preds).any())
 
 # threshold, err = calculate_err(test_preds, test_labels)
 
-print(calculate_err(test_preds, list(test_labels.values())))
+print(calculate_err(list(test_labels.values())), test_preds)
