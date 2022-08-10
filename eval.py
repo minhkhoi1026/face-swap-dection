@@ -27,16 +27,16 @@ args = parse_args()
 batch_size = int(args.bs)
 dim = int(args.dim)
 weight_path = args.weight
+num_classes = 2
 
 test_image_paths = load_image_file_paths("test")
 test_labels = generate_label_from_path(test_image_paths)
-test_generator = DataGenerator(test_image_paths, test_labels, batch_size=batch_size, dim=(dim, dim), type_gen='predict')
+test_generator = DataGenerator(test_image_paths, test_labels, num_classes, batch_size=batch_size, dim=(dim, dim), type_gen='predict')
 
-model = attention_model(1, backbone=args.backbone, shape=(dim, dim, 3))
+model = attention_model(num_classes, backbone=args.backbone, shape=(dim, dim, 3))
 model.load_weights(weight_path)
-test_preds = model.predict(test_generator)
-
-test_preds = test_preds.flatten()
+test_preds = argmax(model.predict(test_generator), axis=1)
+print(test_preds.shape)
 
 test_true = []
 for path in test_image_paths:
