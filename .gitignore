@@ -1,9 +1,11 @@
-# dataset
+# dataset-related info
 test/
 train/
 dataset/
-logs/
 weights/train*
+
+# slurm
+slurm*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
