@@ -80,6 +80,11 @@ Example training command:
 $ python train.py --bs 128 --dim 128 --backbone Xception --num-workers 8
 ```
 
+For evaluate model, use this command:
+```
+$ 
+```
+
 ## Test
 To test the model using your webcam, run the following command: `python test.py`
 
@@ -92,9 +97,9 @@ $ sbatch extract_test.slurm
 ```
 - See job queue
 ```
-squeue --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R" --me
+$ squeue --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R" --me
 ```
 - Cancel a job
 ```
-scancel <job-id>
+$ scancel <job-id>
 ```
