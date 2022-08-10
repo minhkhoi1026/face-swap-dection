@@ -5,16 +5,19 @@ import cv2
 import random
 import matplotlib.pyplot as plt
 from keras.preprocessing.image import ImageDataGenerator
+from tensorflow import one_hot
+
 from src.utils.retinex import automatedMSRCR
 
 class DataGenerator(keras.utils.Sequence):
 
-    def __init__(self, list_IDs, labels, batch_size=32, dim=(32, 32),
+    def __init__(self, list_IDs, labels, num_classes, batch_size=32, dim=(32, 32),
                  shuffle=True, type_gen='train'):
-        'Initialization'
+        '''Initialization'''
         self.dim = dim
         self.batch_size = batch_size
         self.labels = labels
+        self.num_classes = num_classes
         self.list_IDs = list_IDs
         self.shuffle = shuffle
         self.type_gen = type_gen
@@ -82,7 +85,7 @@ class DataGenerator(keras.utils.Sequence):
         # Initialization
         X = [np.empty((self.batch_size, self.dim[0], self.dim[1], 3)), 
              np.empty((self.batch_size, self.dim[0], self.dim[1], 3))]
-        Y = np.empty((self.batch_size), dtype=int)
+        y = np.empty((self.batch_size), dtype=int)
 
         for i, ID in enumerate(list_IDs_temp):  # ID is name of file
             img = cv2.imread(ID)
@@ -99,14 +102,17 @@ class DataGenerator(keras.utils.Sequence):
             X[0][i] = img/255.0
             X[1][i] = new_img/255.0
 
-            Y[i] = self.labels[ID]
+            y[i] = self.labels[ID]
 
-        return X, Y
+        if self.num_classes > 1:
+            y = one_hot(y, depth=self.num_classes)
+            
+        return X, y
 
-def load_dataset_to_generator(data_path, bs, dim, type_gen):
+def load_dataset_to_generator(data_path, num_classes, bs, dim, type_gen):
     image_paths = load_image_file_paths(data_path)
     labels = generate_label_from_path(image_paths)
-    return DataGenerator(image_paths, labels, batch_size=bs, dim=dim, type_gen=type_gen)
+    return DataGenerator(image_paths, labels, num_classes, batch_size=bs, dim=dim, type_gen=type_gen)
 
 def load_image_file_paths(data_path):
     image_paths = []

@@ -1,7 +1,6 @@
 import warnings
 warnings.filterwarnings('ignore')
 
-from tensorflow_addons.optimizers import Lookahead, RectifiedAdam
 from tensorflow.keras.optimizers import SGD
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
 import os
@@ -25,15 +24,16 @@ args = parse_args()
 bs = int(args.bs)
 dim = (int(args.dim),int(args.dim))
 num_workers = int(args.num_workers)
+num_classes = 2
 
 # create data generator
 print("---------CREATE DATA GENERATOR---------")
-train_gen = load_dataset_to_generator("train", bs, dim, "train")
-val_gen = load_dataset_to_generator("test", bs, dim, "test")
+train_gen = load_dataset_to_generator("train", num_classes, bs, dim, "train")
+val_gen = load_dataset_to_generator("test", num_classes, bs, dim, "test")
 
 # compile model for training
 print("---------COMPILE MODEL---------")
-model = attention_model(2, backbone=args.backbone, shape=(dim[0], dim[1], 3))
+model = attention_model(num_classes, backbone=args.backbone, shape=(dim[0], dim[1], 3))
 optimizer = SGD(learning_rate=0.0001, momentum=0.9)
 # model = attention_model(1, backbone=args.backbone, shape=(dim[0], dim[1], 3))
 # optimizer = Lookahead(RectifiedAdam())
@@ -45,7 +45,6 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=2)
 
 # CSV Logger callback to save train history
 os.makedirs("logs", exist_ok=True)
-<<<<<<< HEAD
 time_str = datetime.now().strftime("%Y%m%d-%H%M%S") 
 log_name = f"training-{time_str}.log"
 logger_filepath = os.path.join("logs", log_name)
