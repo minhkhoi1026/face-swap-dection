@@ -17,4 +17,3 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate fsd
 
 python train.py --bs 64 --dim 128 --backbone Xception --num-workers 8
-

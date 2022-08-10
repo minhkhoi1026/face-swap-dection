@@ -35,6 +35,8 @@ val_gen = load_dataset_to_generator("test", bs, dim, "test")
 print("---------COMPILE MODEL---------")
 model = attention_model(2, backbone=args.backbone, shape=(dim[0], dim[1], 3))
 optimizer = SGD(learning_rate=0.0001, momentum=0.9)
+# model = attention_model(1, backbone=args.backbone, shape=(dim[0], dim[1], 3))
+# optimizer = Lookahead(RectifiedAdam())
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
 print("---------INIT CALLBACK---------")
@@ -43,6 +45,7 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=2)
 
 # CSV Logger callback to save train history
 os.makedirs("logs", exist_ok=True)
+<<<<<<< HEAD
 time_str = datetime.now().strftime("%Y%m%d-%H%M%S") 
 log_name = f"training-{time_str}.log"
 logger_filepath = os.path.join("logs", log_name)

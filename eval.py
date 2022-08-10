@@ -3,6 +3,7 @@ import numpy as np
 import os
 from sklearn.metrics import roc_curve, accuracy_score
 from tensorflow import argmax
+from sklearn.metrics import roc_curve
 
 from src.data.datagen import DataGenerator, load_dataset_to_generator, load_image_file_paths, generate_label_from_path
 from src.models.attention import attention_model
