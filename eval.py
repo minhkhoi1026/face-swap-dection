@@ -1,6 +1,8 @@
 import argparse
 import numpy as np
-from sklearn.metrics import roc_curve
+import os
+from sklearn.metrics import roc_curve, accuracy_score
+from tensorflow import argmax
 
 from src.data.datagen import DataGenerator, load_dataset_to_generator, load_image_file_paths, generate_label_from_path
 from src.models.attention import attention_model
@@ -23,15 +25,20 @@ args = parse_args()
 
 batch_size = int(args.bs)
 dim = int(args.dim)
+weight_path = args.weight
 
 test_image_paths = load_image_file_paths("test")
 test_labels = generate_label_from_path(test_image_paths)
-test_generator = DataGenerator(test_image_paths, test_labels, batch_size=batch_size, dim=(dim, dim), type_gen='test')
+test_generator = DataGenerator(test_image_paths, test_labels, batch_size=batch_size, dim=(dim, dim), type_gen='predict')
 
 model = attention_model(1, backbone=args.backbone, shape=(dim, dim, 3))
-test_preds = np.flatten(model.predict(test_generator))
-print(np.isnan(test_preds).any())
+model.load_weights(weight_path)
+test_preds = model.predict(test_generator)
 
-# threshold, err = calculate_err(test_preds, test_labels)
+test_preds = test_preds.flatten()
 
-print(calculate_err(list(test_labels.values())), test_preds)
+test_true = []
+for path in test_image_paths:
+    test_true.append(int(os.path.basename(os.path.dirname(path)) == 'real'))
+
+print(calculate_err(test_true, test_preds))

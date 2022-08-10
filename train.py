@@ -2,9 +2,11 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from tensorflow_addons.optimizers import Lookahead, RectifiedAdam
+from tensorflow.keras.optimizers import SGD
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
 import os
 import argparse
+from datetime import datetime
 
 from src.models.attention import attention_model
 from src.data.datagen import load_dataset_to_generator
@@ -31,8 +33,8 @@ val_gen = load_dataset_to_generator("test", bs, dim, "test")
 
 # compile model for training
 print("---------COMPILE MODEL---------")
-model = attention_model(1, backbone=args.backbone, shape=(dim[0], dim[1], 3))
-optimizer = Lookahead(RectifiedAdam())
+model = attention_model(2, backbone=args.backbone, shape=(dim[0], dim[1], 3))
+optimizer = SGD(learning_rate=0.0001, momentum=0.9)
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
 print("---------INIT CALLBACK---------")
@@ -41,12 +43,14 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=2)
 
 # CSV Logger callback to save train history
 os.makedirs("logs", exist_ok=True)
-logger_filepath = os.path.join("logs", "training.log")
+time_str = datetime.now().strftime("%Y%m%d-%H%M%S") 
+log_name = f"training-{time_str}.log"
+logger_filepath = os.path.join("logs", log_name)
 csv_logger = CSVLogger(logger_filepath)
 
 # checkpoint callback, save weight every epoch
 os.makedirs("weights", exist_ok=True)
-checkpoint_filepath = os.path.join("weights", "weight-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}.hdf5")
+checkpoint_filepath = os.path.join("weights", f"weight-{args.backbone}" + "-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}.hdf5")
 validate_freq = 1
 checkpoint = ModelCheckpoint(checkpoint_filepath, monitor='val_accuracy', verbose=1, save_best_only=False, period=validate_freq)
 
