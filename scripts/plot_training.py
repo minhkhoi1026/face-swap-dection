@@ -17,17 +17,17 @@ fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(15, 8))
 # plot accuray
 axes[0].plot(df['accuracy'])
 axes[0].plot(df['val_accuracy'])
-axes[0].title('model accuracy')
-axes[0].ylabel('accuracy')
-axes[0].xlabel('epoch')
+axes[0].set_title('model accuracy')
+axes[0].set_ylabel('accuracy')
+axes[0].set_xlabel('epoch')
 axes[0].legend(['train', 'validation'], loc='upper right')
 
 # plot loss
 axes[1].plot(df['loss'])
 axes[1].plot(df['val_loss'])
-axes[1].title('model loss')
-axes[1].ylabel('loss')
-axes[1].xlabel('epoch')
+axes[1].set_title('model loss')
+axes[1].set_ylabel('loss')
+axes[1].set_xlabel('epoch')
 axes[1].legend(['train', 'validation'], loc='upper right')
 
 fig.tight_layout()
