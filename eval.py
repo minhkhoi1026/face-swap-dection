@@ -4,6 +4,7 @@ import os
 from sklearn.metrics import roc_curve, accuracy_score
 from tensorflow import argmax
 from sklearn.metrics import roc_curve
+import pickle
 
 from src.data.datagen import DataGenerator, load_dataset_to_generator, load_image_file_paths, generate_label_from_path
 from src.models.attention import attention_model
@@ -14,6 +15,7 @@ def parse_args():
     parser.add_argument("--backbone", help="backbone architecture", required=True)
     parser.add_argument("--dim", help="shape of input image", required=True)
     parser.add_argument("--weight", help="path to model's pretrained weight", required=True)
+    parser.add_argument("--num-classes", help="number of output class, can be 1 or 2", required=True)
     return parser.parse_args()
 
 def calculate_err(y, y_pred):
@@ -27,7 +29,7 @@ args = parse_args()
 batch_size = int(args.bs)
 dim = int(args.dim)
 weight_path = args.weight
-num_classes = 2
+num_classes = args.num_classes
 
 test_image_paths = load_image_file_paths("test")
 test_labels = generate_label_from_path(test_image_paths)
@@ -35,11 +37,18 @@ test_generator = DataGenerator(test_image_paths, test_labels, num_classes, batch
 
 model = attention_model(num_classes, backbone=args.backbone, shape=(dim, dim, 3))
 model.load_weights(weight_path)
-test_preds = argmax(model.predict(test_generator), axis=1)
-print(test_preds.shape)
+    
+test_pred = None
+if (num_classes == 1):
+    test_pred = np.flatten(model.predict(test_generator))
+elif num_classes == 2:
+    test_pred = argmax(model.predict(test_generator), axis=1)
 
 test_true = []
 for path in test_image_paths:
     test_true.append(int(os.path.basename(os.path.dirname(path)) == 'real'))
 
-print(calculate_err(test_true, test_preds))
+print(calculate_err(test_true, test_pred))
+
+with open("result.pickle", "wb") as f:
+    pickle.dump(f, [test_true, test_pred])
