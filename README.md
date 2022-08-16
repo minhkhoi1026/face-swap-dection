@@ -82,7 +82,7 @@ $ python train.py --bs 128 --dim 128 --backbone Xception --num-workers 8
 
 For evaluate model, use this command:
 ```
-$ python eval.py --bs 128 --dim 128 --backbone Xception
+$ python eval.py --bs 20 --dim 128 --backbone Xception --num-classes 1 --weight weights/train/weight-02-1.00-1.00-0.00061.hdf5
 ```
 
 ## Test

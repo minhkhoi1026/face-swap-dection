@@ -29,7 +29,7 @@ args = parse_args()
 batch_size = int(args.bs)
 dim = int(args.dim)
 weight_path = args.weight
-num_classes = args.num_classes
+num_classes = int(args.num_classes)
 
 test_image_paths = load_image_file_paths("test")
 test_labels = generate_label_from_path(test_image_paths)
@@ -40,7 +40,7 @@ model.load_weights(weight_path)
     
 test_pred = None
 if (num_classes == 1):
-    test_pred = np.flatten(model.predict(test_generator))
+    test_pred = model.predict(test_generator).flatten()
 elif num_classes == 2:
     test_pred = argmax(model.predict(test_generator), axis=1)
 
@@ -51,4 +51,4 @@ for path in test_image_paths:
 print(calculate_err(test_true, test_pred))
 
 with open("result.pickle", "wb") as f:
-    pickle.dump(f, [test_true, test_pred])
+    pickle.dump([test_true, test_pred], f)

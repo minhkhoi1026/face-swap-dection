@@ -52,7 +52,7 @@ csv_logger = CSVLogger(logger_filepath)
 
 # checkpoint callback, save weight every epoch
 os.makedirs("weights", exist_ok=True)
-checkpoint_filepath = os.path.join("weights", f"weight-{args.backbone}" + "-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}.hdf5")
+checkpoint_filepath = os.path.join("weights", f"weight-{time_str}-{args.backbone}" + "-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}.hdf5")
 validate_freq = 1
 checkpoint = ModelCheckpoint(checkpoint_filepath, monitor='val_accuracy', verbose=1, save_best_only=False, period=validate_freq)
 
