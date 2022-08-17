@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument("--dim", help="dim", required=True)
     parser.add_argument("--backbone", help="backbone architecture", required=True)
     parser.add_argument("--num-workers", help="number of worker", default=1, required=False)
-    
+    parser.add_argument("--num-classes", help="number of classes in output layer", default=1, required=False) 
     return parser.parse_args()
 
 # get command line arguments
@@ -24,11 +24,11 @@ args = parse_args()
 bs = int(args.bs)
 dim = (int(args.dim),int(args.dim))
 num_workers = int(args.num_workers)
-num_classes = 2
+num_classes = int(args.num_classes)
 
 # create data generator
 print("---------CREATE DATA GENERATOR---------")
-train_gen = load_dataset_to_generator("train", num_classes, bs, dim, "train")
+train_gen = load_dataset_to_generator("train", num_classes, bs, dim, "train", oversampling=True)
 val_gen = load_dataset_to_generator("test", num_classes, bs, dim, "test")
 
 # compile model for training

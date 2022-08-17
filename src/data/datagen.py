@@ -109,16 +109,31 @@ class DataGenerator(keras.utils.Sequence):
             
         return X, y
 
-def load_dataset_to_generator(data_path, num_classes, bs, dim, type_gen):
-    image_paths = load_image_file_paths(data_path)
+def load_dataset_to_generator(data_path, num_classes, bs, dim, type_gen, oversampling=False):
+    image_paths = load_image_file_paths(data_path, oversampling)
     labels = generate_label_from_path(image_paths)
     return DataGenerator(image_paths, labels, num_classes, batch_size=bs, dim=dim, type_gen=type_gen)
 
-def load_image_file_paths(data_path):
+def load_image_file_paths(data_path, oversampling=False):
     image_paths = []
-    for folder in [os.path.join(data_path, "fake"), os.path.join(data_path, "real")]:
-        for path in os.listdir(folder):
-            image_paths.append(os.path.join(folder, path))
+    
+    dirs = [os.path.join(data_path, "fake"), os.path.join(data_path, "real")]
+    if oversampling == True:
+        nsample = max(len(os.listdir(x)) for x in dirs) 
+
+        for folder in dirs:
+            tmp_paths = []
+            for path in os.listdir(folder):
+                tmp_paths.append(os.path.join(folder, path))
+            ids = np.arange(len(tmp_paths))
+            choices = np.random.choice(ids, nsample)
+            image_paths.extend([tmp_paths[id] for id in choices])
+            print(len(image_paths))
+    else:
+          for folder in dirs:
+            for path in os.listdir(folder):
+                image_paths.append(os.path.join(folder, path))
+        
     return image_paths
 
 def generate_label_from_path(image_paths):
