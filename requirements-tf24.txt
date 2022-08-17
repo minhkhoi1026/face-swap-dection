@@ -1,0 +1,13 @@
+python-dotenv
+kaggle
+tqdm
+numpy
+matplotlib
+sklearn
+numba
+opencv-python
+tensorflow
+tensorflow-gpu
+tensorflow_addons
+keras
+mtcnn
