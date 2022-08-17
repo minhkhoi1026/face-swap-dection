@@ -28,7 +28,6 @@ class Attention(Layer):
 
         d1 = K.sum(stream1 * self.q, axis=1, keepdims=True) # sum over second axis
         d2 = K.sum(stream2 * self.q, axis=1, keepdims=True)
-        print(d1.shape, d2.shape)
         ds = Concatenate(axis=1)([d1, d2])
 
         # d1 and d2 and of size (bs, 1) individually
