@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=train-model    # create a short name for your job
+#SBATCH --job-name=eval-model    # create a short name for your job
 #SBATCH --nodes=1                # node count
 #SBATCH --ntasks=1               # total number of tasks across all nodes
 #SBATCH --cpus-per-task=1        # cpu-cores per task (>1 if multi-threaded tasks)
@@ -16,4 +16,4 @@ source ~/miniconda3/etc/profile.d/conda.sh
 
 conda activate fsd 
 
-python train.py --bs 64 --dim 128 --backbone Xception --num-workers 8 --num-classes 1
+python eval.py --bs 20 --dim 128 --backbone Xception --num-classes 1 --weight weights/weight-20220820-124207-Xception-09-0.90-0.82-0.40303.hdf5

@@ -48,7 +48,7 @@ test_true = []
 for path in test_image_paths:
     test_true.append(int(os.path.basename(os.path.dirname(path)) == 'real'))
 
-print(calculate_err(test_true, test_pred))
-
 with open("result.pickle", "wb") as f:
     pickle.dump([test_true, test_pred], f)
+
+print(calculate_err(test_true, test_pred))

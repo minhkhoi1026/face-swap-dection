@@ -28,7 +28,7 @@ num_classes = int(args.num_classes)
 
 # create data generator
 print("---------CREATE DATA GENERATOR---------")
-train_gen = load_dataset_to_generator("train", num_classes, bs, dim, "train", oversampling=True)
+train_gen = load_dataset_to_generator("train", num_classes, bs, dim, "train", oversampling=True, shuffle=True)
 val_gen = load_dataset_to_generator("test", num_classes, bs, dim, "test")
 
 # compile model for training
@@ -72,4 +72,5 @@ model.fit_generator(generator=train_gen,
                     validation_freq=validate_freq,
                     max_queue_size=10,
                     workers=num_workers,
+                    shuffle=True
                     )

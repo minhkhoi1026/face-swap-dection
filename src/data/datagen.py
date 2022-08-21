@@ -12,7 +12,7 @@ from src.utils.retinex import automatedMSRCR
 class DataGenerator(keras.utils.Sequence):
 
     def __init__(self, list_IDs, labels, num_classes, batch_size=32, dim=(32, 32),
-                 shuffle=True, type_gen='train'):
+                 shuffle=False, type_gen='train'):
         '''Initialization'''
         self.dim = dim
         self.batch_size = batch_size
@@ -109,12 +109,12 @@ class DataGenerator(keras.utils.Sequence):
             
         return X, y
 
-def load_dataset_to_generator(data_path, num_classes, bs, dim, type_gen, oversampling=False):
-    image_paths = load_image_file_paths(data_path, oversampling)
+def load_dataset_to_generator(data_path, num_classes, bs, dim, type_gen, oversampling=False, shuffle=False):
+    image_paths = load_image_file_paths(data_path, oversampling, shuffle)
     labels = generate_label_from_path(image_paths)
-    return DataGenerator(image_paths, labels, num_classes, batch_size=bs, dim=dim, type_gen=type_gen)
+    return DataGenerator(image_paths, labels, num_classes, batch_size=bs, dim=dim, shuffle=shuffle, type_gen=type_gen)
 
-def load_image_file_paths(data_path, oversampling=False):
+def load_image_file_paths(data_path, oversampling=False, shuffle=False):
     image_paths = []
     
     dirs = [os.path.join(data_path, "fake"), os.path.join(data_path, "real")]
@@ -133,7 +133,11 @@ def load_image_file_paths(data_path, oversampling=False):
           for folder in dirs:
             for path in os.listdir(folder):
                 image_paths.append(os.path.join(folder, path))
-        
+    
+    # shuffle dataset for training
+    if shuffle == True:
+        random.shuffle(image_paths)
+
     return image_paths
 
 def generate_label_from_path(image_paths):
