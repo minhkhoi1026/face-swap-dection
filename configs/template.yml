@@ -1,0 +1,29 @@
+data_generator:
+  input_size: 256
+  num_classes: 1
+  train:
+    data_path: casia-fasd/train
+    batch_size: 32
+    type_gen: train
+    kwargs:
+      oversampling: true
+      shuffle: true
+  test:
+    data_path: casia-fasd/test
+    batch_size: 16
+    type_gen: test
+    kwargs: {}
+model:
+  backbone: Xception
+  loss: binary_crossentropy
+  metrics:
+    - accuracy
+train:
+  num_worker: 8
+  start_epoch: 0
+  num_epoch: 70
+  validate_freq: 1
+optimizer:
+  learning_rate: 0.0001
+  momentum: 0.9
+
