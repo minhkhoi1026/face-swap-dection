@@ -27,7 +27,7 @@ def train(config):
                                         shuffle=config["dataset"]["shuffle"])
     labels = generate_label_from_path(image_paths)
 
-    X_train, X_val, y_train, y_val = train_test_split(image_paths, labels, test_size=1 - config["dataset"]["train_split"], random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(image_paths, labels, train_size=config["dataset"]["train_split"], random_state=42)
     
     train_gen = DataGenerator(list_IDs=X_train, 
                               labels=y_train, 

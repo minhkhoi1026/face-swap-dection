@@ -39,10 +39,8 @@ class DataGenerator(keras.utils.Sequence):
         'Generate one batch of data'
         # Generate indexes of the batch
         indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
-        # Find list of IDs
-        list_IDs_temp = [self.list_IDs[k] for k in indexes]
         # Generate data
-        X, y = self.__data_generation(list_IDs_temp)
+        X, y = self.__data_generation(indexes)
         if self.type_gen == 'predict':
             return X
         else:
@@ -80,15 +78,16 @@ class DataGenerator(keras.utils.Sequence):
         img = self.aug_gen.apply_transform(img, dict_input)
         return img
 
-    def __data_generation(self, list_IDs_temp):
+    def __data_generation(self, indexes):
         'Generates data containing batch_size samples'
         # Initialization
         X = [np.empty((self.batch_size, self.dim[0], self.dim[1], 3)), 
              np.empty((self.batch_size, self.dim[0], self.dim[1], 3))]
         y = np.empty((self.batch_size), dtype=int)
 
-        for i, ID in enumerate(list_IDs_temp):  # ID is name of file
-            img = cv2.imread(ID)
+        for i, k in enumerate(indexes):
+            image_path = self.list_IDs[k]
+            img = cv2.imread(image_path)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             img = cv2.resize(img, (self.dim[1], self.dim[0]))
 
@@ -102,7 +101,7 @@ class DataGenerator(keras.utils.Sequence):
             X[0][i] = img/255.0
             X[1][i] = new_img/255.0
 
-            y[i] = self.labels[i]
+            y[i] = self.labels[k]
 
         if self.num_classes > 1:
             y = one_hot(y, depth=self.num_classes)
