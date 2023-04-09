@@ -49,16 +49,16 @@ class Attention(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape[0]
 
-def attention_model(classes, backbone = 'MobileNetV3_Small', shape=(256, 256, 3)):
+def attention_model(num_classes, backbone = 'MobileNetV3_Small', shape=(256, 256, 3)):
     if backbone == 'Xception':
         stream1 = Xception(include_top=False, weights='imagenet', input_shape=shape)
         stream2 = Xception(include_top=False, weights='imagenet', input_shape=shape)
     elif backbone == 'MobileNetV3_Large':
-        stream1 = MobileNetV3_Large(shape, classes).build()
-        stream2 = MobileNetV3_Large(shape, classes).build()
+        stream1 = MobileNetV3_Large(shape, num_classes).build()
+        stream2 = MobileNetV3_Large(shape, num_classes).build()
     else: # MobileNetV3_Small
-        stream1 = MobileNetV3_Small(shape, classes).build()
-        stream2 = MobileNetV3_Small(shape, classes).build()
+        stream1 = MobileNetV3_Small(shape, num_classes).build()
+        stream2 = MobileNetV3_Small(shape, num_classes).build()
 
     input1 = Input(shape)
     input2 = Input(shape)
@@ -73,10 +73,10 @@ def attention_model(classes, backbone = 'MobileNetV3_Small', shape=(256, 256, 3)
 
     output = Attention(size=output1.shape[1])([output1, output2])
 
-    if classes==1:
-        output = Dense(classes, activation='sigmoid', name='predictions')(output)
+    if num_classes==1:
+        output = Dense(num_classes, activation='sigmoid', name='predictions')(output)
     else:
-        output = Dense(classes, activation='softmax', name='predictions')(output)
+        output = Dense(num_classes, activation='softmax', name='predictions')(output)
 
     return Model(inputs=[input1, input2], outputs=output)
 

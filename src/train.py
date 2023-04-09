@@ -6,9 +6,10 @@ from tensorflow.keras.optimizers import SGD
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
 import os
 from datetime import datetime
+from sklearn.model_selection import train_test_split
 
 from src.models.attention import attention_model
-from src.data.datagen import load_dataset_to_generator
+from src.data.datagen import load_image_file_paths, generate_label_from_path, DataGenerator
 from src.utils.opt import Opts
 from src.utils.loading import load_gpu
 
@@ -18,24 +19,34 @@ def train(config):
     
     # create data generator
     print("---------CREATE DATA GENERATOR---------")
-    datagen_config = config["data_generator"]
-    input_shape = (datagen_config["input_size"], datagen_config["input_size"])
-    train_gen = load_dataset_to_generator(data_path=datagen_config["train"]["data_path"], 
-                                          num_classes=datagen_config["num_classes"],
-                                          bs=datagen_config["train"]["batch_size"], 
-                                          dim=input_shape, 
-                                          type_gen=datagen_config["train"]["type_gen"], 
-                                          **datagen_config["train"]["kwargs"])
-    val_gen = load_dataset_to_generator(data_path=datagen_config["test"]["data_path"], 
-                                          num_classes=datagen_config["num_classes"],
-                                          bs=datagen_config["test"]["batch_size"], 
-                                          dim=input_shape, 
-                                          type_gen=datagen_config["test"]["type_gen"], 
-                                          **datagen_config["test"]["kwargs"])
+    input_shape = (config["model"]["input_size"], config["model"]["input_size"])
+    
+    # split train and validation
+    image_paths = load_image_file_paths(data_path=config["dataset"]["data_path"],
+                                        oversampling=config["dataset"]["oversampling"],
+                                        shuffle=config["dataset"]["shuffle"])
+    labels = generate_label_from_path(image_paths)
+
+    X_train, X_val, y_train, y_val = train_test_split(image_paths, labels, test_size=1 - config["dataset"]["train_split"], random_state=42)
+    
+    train_gen = DataGenerator(list_IDs=X_train, 
+                              labels=y_train, 
+                                num_classes=config["model"]["num_classes"],
+                                batch_size=config["data_generator"]["train"]["batch_size"], 
+                                dim=input_shape, 
+                                type_gen=config["data_generator"]["train"]["type_gen"], 
+                                shuffle=config["data_generator"]["train"]["shuffle"])
+    val_gen = DataGenerator(list_IDs=X_val, 
+                              labels=y_val, 
+                                num_classes=config["model"]["num_classes"],
+                                batch_size=config["data_generator"]["val"]["batch_size"], 
+                                dim=input_shape, 
+                                type_gen=config["data_generator"]["val"]["type_gen"], 
+                                shuffle=config["data_generator"]["val"]["shuffle"])
 
     # compile model for training
     print("---------COMPILE MODEL---------")
-    model = attention_model(datagen_config["num_classes"], 
+    model = attention_model(num_classes=config["model"]["num_classes"], 
                             backbone=config["model"]["backbone"], 
                             shape=(*input_shape, 3))
     optimizer = SGD(**config["optimizer"])
@@ -45,7 +56,7 @@ def train(config):
     print("---------INIT CALLBACK---------")
     # early stopping callback, stop as long as the validation loss does not decrease anymore
     # TODO: add callback in config
-    early_stopping = EarlyStopping(monitor='val_loss', patience=2)
+    early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
     # CSV Logger callback to save train history
     os.makedirs("logs", exist_ok=True)
@@ -65,7 +76,7 @@ def train(config):
 
     # Train model on dataset
     print("---------FITTING---------")
-    callbacks_list = [checkpoint, csv_logger]
+    callbacks_list = [checkpoint, csv_logger, early_stopping]
     model.fit_generator(generator=train_gen,
                         validation_data=val_gen,
                         epochs=config["train"]["num_epoch"],

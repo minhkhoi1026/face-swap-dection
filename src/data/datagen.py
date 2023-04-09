@@ -102,7 +102,7 @@ class DataGenerator(keras.utils.Sequence):
             X[0][i] = img/255.0
             X[1][i] = new_img/255.0
 
-            y[i] = self.labels[ID]
+            y[i] = self.labels[i]
 
         if self.num_classes > 1:
             y = one_hot(y, depth=self.num_classes)
@@ -141,7 +141,7 @@ def load_image_file_paths(data_path, oversampling=False, shuffle=False):
     return image_paths
 
 def generate_label_from_path(image_paths):
-    labels = {}
+    labels = []
     for path in image_paths:
-        labels[path] = int(os.path.basename(os.path.dirname(path)) == 'real')
+        labels.append(int(os.path.basename(os.path.dirname(path)) == 'real'))
     return labels
