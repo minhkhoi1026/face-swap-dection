@@ -3,16 +3,16 @@ data_generator:
   num_classes: 1
   train:
     data_path: casia-fasd/train
-    batch_size: 32
+    batch_size: 64
     type_gen: train
     kwargs:
       oversampling: true
-      shuffle: true
   test:
     data_path: casia-fasd/test
-    batch_size: 16
+    batch_size: 64
     type_gen: test
-    kwargs: {}
+    kwargs:
+      oversampling: false
 model:
   backbone: Xception
   loss: binary_crossentropy

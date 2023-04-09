@@ -19,6 +19,7 @@ def train(config):
     # create data generator
     print("---------CREATE DATA GENERATOR---------")
     datagen_config = config["data_generator"]
+    
     input_shape = (datagen_config["input_size"], datagen_config["input_size"])
     train_gen = load_dataset_to_generator(data_path=datagen_config["train"]["data_path"], 
                                           num_classes=datagen_config["num_classes"],
@@ -39,13 +40,15 @@ def train(config):
                             backbone=config["model"]["backbone"], 
                             shape=(*input_shape, 3))
     optimizer = SGD(**config["optimizer"])
+    print(optimizer.get_config())
+    print(config["model"])
     # optimizer = Lookahead(RectifiedAdam())
     model.compile(optimizer=optimizer, loss=config["model"]["loss"], metrics=config["model"]["metrics"])
 
     print("---------INIT CALLBACK---------")
     # early stopping callback, stop as long as the validation loss does not decrease anymore
     # TODO: add callback in config
-    early_stopping = EarlyStopping(monitor='val_loss', patience=2)
+    early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
     # CSV Logger callback to save train history
     os.makedirs("logs", exist_ok=True)
@@ -65,7 +68,7 @@ def train(config):
 
     # Train model on dataset
     print("---------FITTING---------")
-    callbacks_list = [checkpoint, csv_logger]
+    callbacks_list = [checkpoint, csv_logger, early_stopping]
     model.fit_generator(generator=train_gen,
                         validation_data=val_gen,
                         epochs=config["train"]["num_epoch"],

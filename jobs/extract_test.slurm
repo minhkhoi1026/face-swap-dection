@@ -16,5 +16,5 @@ source ~/miniconda3/etc/profile.d/conda.sh
 
 conda activate fsd
 
-python extract_frames.py --dataset casia-fasd --source ./dataset/casia_fasd/test_release/ --dest ./test --sampling-ratio 0.3
+python scripts/extract_frames.py --dataset casia-fasd --source ./dataset/casia_fasd/test_release/ --dest ./casia_fasd/test --sampling-ratio 0.3
 

@@ -7,6 +7,9 @@ import tensorflow as tf
 import argparse
 from numba import jit
 
+tf.get_logger().setLevel('ERROR')
+
+
 detector = MTCNN()
 
 def parse_args():
@@ -76,8 +79,6 @@ def extract_individual(individual_path, output_path, individual_name, sampling_r
 def extract_all_individual(source_path, dest_path, sampling_ratio):
     for individual in tqdm(os.listdir(source_path)):
         extract_individual(os.path.join(source_path, individual), dest_path, individual, sampling_ratio)
-
-tf.debugging.set_log_device_placement(True)
 
 args = parse_args()
 

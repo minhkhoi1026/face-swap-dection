@@ -18,4 +18,4 @@ conda activate fsd
 
 pip install .
 
-python src/train.py 
+python src/train.py -c configs/template.yml
