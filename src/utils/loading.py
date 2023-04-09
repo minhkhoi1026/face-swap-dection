@@ -14,4 +14,4 @@ def load_gpu():
         except RuntimeError as e:
             print(e)
     else:
-        print("No GPU found!")
+        print("[WARNING] --------------No GPU found!-------------")
