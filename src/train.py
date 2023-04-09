@@ -50,6 +50,8 @@ def train(config):
                             backbone=config["model"]["backbone"], 
                             shape=(*input_shape, 3))
     optimizer = SGD(**config["optimizer"])
+    print(optimizer.get_config())
+    print(config["model"])
     # optimizer = Lookahead(RectifiedAdam())
     model.compile(optimizer=optimizer, loss=config["model"]["loss"], metrics=config["model"]["metrics"])
 
