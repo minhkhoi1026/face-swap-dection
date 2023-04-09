@@ -2,7 +2,8 @@
 test/
 train/
 dataset/
-weights/train*
+weights/*
+logs/*
 
 # slurm
 slurm*

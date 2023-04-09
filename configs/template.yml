@@ -1,5 +1,5 @@
 data_generator:
-  input_size: 256
+  input_size: 128
   num_classes: 1
   train:
     data_path: casia-fasd/train

@@ -1,6 +1,7 @@
 import warnings
 warnings.filterwarnings('ignore')
 
+import tensorflow as tf
 from tensorflow.keras.optimizers import SGD
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
 import os
@@ -9,8 +10,12 @@ from datetime import datetime
 from src.models.attention import attention_model
 from src.data.datagen import load_dataset_to_generator
 from src.utils.opt import Opts
+from src.utils.loading import load_gpu
 
 def train(config):
+    # Check for GPU availability
+    load_gpu()
+    
     # create data generator
     print("---------CREATE DATA GENERATOR---------")
     datagen_config = config["data_generator"]
