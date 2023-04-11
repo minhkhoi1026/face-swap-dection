@@ -1,10 +1,10 @@
 import numpy as np
 import os
-import keras
+from tensorflow import keras
 import cv2
 import random
 import matplotlib.pyplot as plt
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow import one_hot
 
 from src.utils.retinex import automatedMSRCR

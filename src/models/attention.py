@@ -1,11 +1,11 @@
 import warnings
 warnings.filterwarnings("ignore")
 
-from keras.models import Model
-from keras.layers import Dense, GlobalAveragePooling2D, Input, \
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Input, \
     Add, Lambda, Layer, Concatenate, Softmax
-from keras.applications.xception import Xception
-import keras.backend as K
+from tensorflow.keras.applications.xception import Xception
+import tensorflow.keras.backend as K
 
 from src.models.mobilenet_v3_large import MobileNetV3_Large
 from src.models.mobilenet_v3_small import MobileNetV3_Small
@@ -15,7 +15,15 @@ class Attention(Layer):
         self.trainable=True
         self.size = size
         super(Attention, self).__init__(**kwargs)
+        
+    def get_config(self):
 
+        config = super().get_config().copy()
+        config.update({
+            'size': self.size,
+        })
+        return config
+    
     def build(self, input_shape):
         super(Attention, self).build(input_shape)
         self.q = self.add_weight(name='q',
@@ -26,22 +34,20 @@ class Attention(Layer):
     def call(self, x):
         stream1, stream2 = x[0], x[1]
         
-        d1 = Lambda(lambda x: K.sum(x * self.q, axis=1, keepdims=True))(stream1) # sum over second axis
-        d2 = Lambda(lambda x: K.sum(x * self.q, axis=1, keepdims=True))(stream2)
+        d1 = K.sum(stream1 * self.q, axis=1, keepdims=True) # sum over second axis
+        d2 = K.sum(stream2 * self.q, axis=1, keepdims=True)
         ds = Concatenate(axis=1)([d1, d2])
 
         # d1 and d2 and of size (bs, 1) individually
         # ds of size (bs, 2)
 
         tmp = Softmax(axis=0)(ds)
-        w1 = Lambda(lambda x: x[:, 0])(tmp)
-        w2 = Lambda(lambda x: x[:, 1])(tmp)
 
-        w1 = Lambda(lambda x: K.expand_dims(x, -1))(w1)
-        w2 = Lambda(lambda x: K.expand_dims(x, -1))(w2)
+        w1 = K.expand_dims(tmp[:, 0], -1)
+        w2 = K.expand_dims(tmp[:, 1], -1)
 
-        stream1 = Lambda(lambda x: x[0]*x[1])([stream1, w1])
-        stream2 = Lambda(lambda x: x[0]*x[1])([stream2, w2])
+        stream1 = stream1 * w1
+        stream2 = stream2 * w2
         result = Add()([stream1, stream2])
         
         return result
@@ -65,8 +71,8 @@ def attention_model(num_classes, backbone = 'MobileNetV3_Small', shape=(256, 256
     output1 = stream1(input1)
     output2 = stream2(input2)
    
-    stream1.name = "stream1"
-    stream2.name = "stream2"
+    stream1._name = "stream1"
+    stream2._name = "stream2"
     if backbone == 'Xception':
         output1 = GlobalAveragePooling2D(name='avg_pool_1')(output1)
         output2 = GlobalAveragePooling2D(name='avg_pool_2')(output2)

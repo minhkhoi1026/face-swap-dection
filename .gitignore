@@ -1,8 +1,7 @@
 # dataset-related info
-test/
-train/
+wandb/
+casia-fasd/
 dataset/
-data/
 weights/
 logs/
 

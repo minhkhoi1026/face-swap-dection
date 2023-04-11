@@ -1,19 +1,21 @@
+global:
+  username: minhkhoi1026
+  project_name: hcmus-fsd
+  run_name: sanity-check
+dataset:
+  data_path: casia-fasd/sanity
+  oversampling: true
+  train_split: 0.5
 data_generator:
-  input_size: 71
-  num_classes: 1
   train:
-    data_path: data
-    batch_size: 16
+    batch_size: 64
     type_gen: train
-    kwargs:
-      oversampling: true
-      shuffle: true
-  test:
-    data_path: data
-    batch_size: 16
-    type_gen: test
-    kwargs: {}
+  val:
+    batch_size: 64
+    type_gen: val
 model:
+  input_size: 128
+  num_classes: 1
   backbone: Xception
   loss: binary_crossentropy
   metrics:
@@ -26,4 +28,29 @@ train:
 optimizer:
   learning_rate: 0.0001
   momentum: 0.9
+callbacks:
+  # - name: WandbCallback
+  #   params:
+  #     monitor: val_accuracy
+  #     mode: max
+  #     save_model: true
+  #     save_weights_only: false
+  #     log_best_prefix: "weight-Xception-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}"
+  - name: CustomModelCheckpoint
+    params:
+      save_dir: weights/old
+      filepath: "weight-Xception-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}.hdf5"
+      monitor: val_accuracy
+      mode: max
+      save_best_only: true
+      save_freq: epoch
+      verbose: 1
+  - name: WandbMetricsLogger
+    params:
+      log_freq: epoch
+      initial_global_step: 0 # equivalent with train.start_epoch
+  - name: EarlyStopping
+    params:
+      monitor: val_loss
+      patience: 5
 
