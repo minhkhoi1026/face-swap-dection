@@ -34,20 +34,25 @@ class Attention(Layer):
     def call(self, x):
         stream1, stream2 = x[0], x[1]
         
-        d1 = K.sum(stream1 * self.q, axis=1, keepdims=True) # sum over second axis
-        d2 = K.sum(stream2 * self.q, axis=1, keepdims=True)
+        d1 = Lambda(lambda x: K.sum(x * self.q, axis=1, keepdims=True))(stream1) # sum over second axis
+        d2 = Lambda(lambda x: K.sum(x * self.q, axis=1, keepdims=True))(stream2)
         ds = Concatenate(axis=1)([d1, d2])
 
         # d1 and d2 and of size (bs, 1) individually
         # ds of size (bs, 2)
 
         tmp = Softmax(axis=0)(ds)
+        w1 = Lambda(lambda x: x[:, 0])(tmp)
+        w2 = Lambda(lambda x: x[:, 1])(tmp)
 
-        w1 = K.expand_dims(tmp[:, 0], -1)
-        w2 = K.expand_dims(tmp[:, 1], -1)
+        w1 = Lambda(lambda x: K.expand_dims(x, -1))(w1)
+        w2 = Lambda(lambda x: K.expand_dims(x, -1))(w2)
 
+        stream1 = Lambda(lambda x: x[0]*x[1])([stream1, w1])
+        stream2 = Lambda(lambda x: x[0]*x[1])([stream2, w2])
+        result = Add()([stream1, stream2])
         
-        return stream1 * w1 + stream2 * w2
+        return result
 
     def compute_output_shape(self, input_shape):
         return input_shape[0]

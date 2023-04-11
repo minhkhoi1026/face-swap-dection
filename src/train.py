@@ -2,8 +2,8 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import datetime
-import keras
-from keras.optimizers import SGD
+import tensorflow as tf # need to imported for the code to run, don't know why
+from tensorflow.keras.optimizers import SGD
 from sklearn.model_selection import train_test_split
 import wandb
 
@@ -23,7 +23,7 @@ def train(config):
 				entity=config["global"]["username"],
 				config=config)
     
-    # Check for GPU availability
+    
     load_gpu()
 
     # create data generator

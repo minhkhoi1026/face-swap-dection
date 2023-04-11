@@ -10,6 +10,7 @@ def load_gpu():
     if gpus:
         # Restrict TensorFlow to use only the first GPU
         try:
+            tf.config.experimental.set_memory_growth(gpus[0], enable=True)
             tf.config.experimental.set_visible_devices(gpus[0], 'GPU')
         except RuntimeError as e:
             print(e)

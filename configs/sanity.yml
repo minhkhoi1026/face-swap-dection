@@ -45,11 +45,11 @@ callbacks:
       monitor: val_accuracy
       mode: max
       save_best_only: true
-      save_freq: epoch
+      period: 1
       verbose: 1
   - name: WandbMetricsLogger
     params:
-      log_freq: epoch
+      log_freq: 1
       initial_global_step: 0 # equivalent with train.start_epoch
   - name: EarlyStopping
     params:
