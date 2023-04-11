@@ -2,8 +2,8 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import datetime
-import tensorflow.keras as keras
-from tensorflow.keras.optimizers import SGD
+import keras
+from keras.optimizers import SGD
 from sklearn.model_selection import train_test_split
 import wandb
 
@@ -46,7 +46,8 @@ def train(config):
 								num_classes=config["model"]["num_classes"],
 								batch_size=config["data_generator"]["train"]["batch_size"], 
 								dim=input_shape, 
-								type_gen=config["data_generator"]["train"]["type_gen"]
+								type_gen=config["data_generator"]["train"]["type_gen"], 
+                                shuffle=config["data_generator"]["train"]["shuffle"]
 								)
     val_gen = DataGenerator(list_IDs=X_val, 
 							labels=y_val, 
@@ -54,6 +55,7 @@ def train(config):
 							batch_size=config["data_generator"]["val"]["batch_size"], 
 							dim=input_shape, 
 							type_gen=config["data_generator"]["val"]["type_gen"], 
+                            shuffle=config["data_generator"]["val"]["shuffle"]
 							)
 
     # compile model for training

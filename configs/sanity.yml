@@ -8,11 +8,13 @@ dataset:
   train_split: 0.5
 data_generator:
   train:
-    batch_size: 64
+    batch_size: 16
     type_gen: train
+    shuffle: true
   val:
-    batch_size: 64
+    batch_size: 16
     type_gen: val
+    shuffle: false
 model:
   input_size: 128
   num_classes: 1

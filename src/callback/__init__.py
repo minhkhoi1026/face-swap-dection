@@ -1,5 +1,5 @@
 from src.utils.registry import Registry
-from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
 from wandb.keras import WandbMetricsLogger
 import os
 

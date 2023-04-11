@@ -1,23 +1,25 @@
 import numpy as np
 import os
-from tensorflow import keras
+import keras
 import cv2
 import random
 import matplotlib.pyplot as plt
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import ImageDataGenerator
 from tensorflow import one_hot
 
 from src.utils.retinex import automatedMSRCR
 
 class DataGenerator(keras.utils.Sequence):
 
-    def __init__(self, list_IDs, labels, num_classes, batch_size=32, dim=(32, 32), type_gen='train'):
+    def __init__(self, list_IDs, labels, num_classes, batch_size=32, dim=(32, 32),
+                 shuffle=False, type_gen='train'):
         '''Initialization'''
         self.dim = dim
         self.batch_size = batch_size
         self.labels = labels
         self.num_classes = num_classes
         self.list_IDs = list_IDs
+        self.shuffle = shuffle
         self.type_gen = type_gen
         self.aug_gen = ImageDataGenerator()
         print("all:", len(self.list_IDs), " batch per epoch", int(np.floor(len(self.list_IDs) / self.batch_size)))
@@ -30,6 +32,8 @@ class DataGenerator(keras.utils.Sequence):
     def on_epoch_end(self):
         'Updates indexes after each epoch'
         self.indexes = np.arange(len(self.list_IDs))
+        if self.shuffle == True:
+            np.random.shuffle(self.indexes)
 
     def __getitem__(self, index):
         'Generate one batch of data'
@@ -104,12 +108,12 @@ class DataGenerator(keras.utils.Sequence):
             
         return X, y
 
-def load_dataset_to_generator(data_path, num_classes, bs, dim, type_gen, oversampling=False):
-    image_paths = load_image_file_paths(data_path, oversampling)
+def load_dataset_to_generator(data_path, num_classes, bs, dim, type_gen, oversampling=False, shuffle=False):
+    image_paths = load_image_file_paths(data_path, oversampling, shuffle)
     labels = generate_label_from_path(image_paths)
-    return DataGenerator(image_paths, labels, num_classes, batch_size=bs, dim=dim, type_gen=type_gen)
+    return DataGenerator(image_paths, labels, num_classes, batch_size=bs, dim=dim, shuffle=shuffle, type_gen=type_gen)
 
-def load_image_file_paths(data_path, oversampling=False):
+def load_image_file_paths(data_path, oversampling=False, shuffle=False):
     image_paths = []
     
     dirs = [os.path.join(data_path, "fake"), os.path.join(data_path, "real")]
@@ -128,6 +132,10 @@ def load_image_file_paths(data_path, oversampling=False):
           for folder in dirs:
             for path in os.listdir(folder):
                 image_paths.append(os.path.join(folder, path))
+    
+    # shuffle dataset for training
+    if shuffle == True:
+        random.shuffle(image_paths)
 
     return image_paths
 
