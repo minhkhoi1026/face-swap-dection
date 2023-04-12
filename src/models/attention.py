@@ -1,11 +1,8 @@
-import warnings
-warnings.filterwarnings("ignore")
-
-from keras.models import Model
-from keras.layers import Dense, GlobalAveragePooling2D, Input, \
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Input, \
     Add, Lambda, Layer, Concatenate, Softmax
-from keras.applications.xception import Xception
-import keras.backend as K
+from tensorflow.keras.applications.xception import Xception
+import tensorflow.keras.backend as K
 
 from src.models.mobilenet_v3_large import MobileNetV3_Large
 from src.models.mobilenet_v3_small import MobileNetV3_Small
@@ -73,8 +70,14 @@ def attention_model(num_classes, backbone = 'MobileNetV3_Small', shape=(256, 256
     output1 = stream1(input1)
     output2 = stream2(input2)
    
-    stream1.name = "stream1"
-    stream2.name = "stream2"
+    # rename module so that model checkpoint can save it
+    stream1._name = "stream1"
+    for w in stream1.weights:
+        w._handle_name = 'stream1_' + w.name
+    stream2._name = "stream2"
+    for w in stream2.weights:
+        w._handle_name = 'stream2_' + w.name
+        
     if backbone == 'Xception':
         output1 = GlobalAveragePooling2D(name='avg_pool_1')(output1)
         output2 = GlobalAveragePooling2D(name='avg_pool_2')(output2)

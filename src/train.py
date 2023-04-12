@@ -1,5 +1,5 @@
-import warnings
-warnings.filterwarnings('ignore')
+import logging
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 import datetime
 import tensorflow as tf # need to imported for the code to run, don't know why
@@ -12,6 +12,7 @@ from src.data.datagen import load_image_file_paths, generate_label_from_path, Da
 from src.callback import CALLBACK_REGISTRY
 from src.utils.opt import Opts
 from src.utils.loading import load_gpu
+import src.metrics # import to register custom metric to Tensorflow
 
 def train(config):
     # init new wandb run
@@ -32,7 +33,8 @@ def train(config):
 
     # split train and validation
     image_paths = load_image_file_paths(data_path=config["dataset"]["data_path"],
-                                        oversampling=config["dataset"]["oversampling"])
+                                        oversampling=config["dataset"]["oversampling"],
+                                        shuffle=config["dataset"]["shuffle"])
     labels = generate_label_from_path(image_paths)
 
     X_train, X_val, y_train, y_val = train_test_split(image_paths, 
@@ -83,10 +85,8 @@ def train(config):
             verbose=1,
             callbacks=callbacks,
             initial_epoch=config["train"]["start_epoch"],
-            validation_freq=config["train"]["validate_freq"],
             max_queue_size=10,
             workers=config["train"]["num_worker"],
-            shuffle=True
             )
     
 if __name__ == "__main__":

@@ -5,7 +5,8 @@ global:
 dataset:
   data_path: casia-fasd/train
   oversampling: true
-  train_split: 0.8
+  shuffle: true
+  train_split: 0.85
 data_generator:
   train:
     batch_size: 64
@@ -21,7 +22,7 @@ model:
   backbone: Xception
   loss: binary_crossentropy
   metrics:
-    - accuracy
+    - equal_error_rate
 train:
   num_worker: 8
   start_epoch: 0
@@ -41,15 +42,15 @@ callbacks:
   - name: CustomModelCheckpoint
     params:
       save_dir: weights/old
-      filepath: "weight-Xception-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}.hdf5"
-      monitor: val_accuracy
-      mode: max
+      filepath: "weight-Xception-{epoch:02d}-{equal_error_rate:.2f}-{loss:.5f}-{val_equal_error_rate:.2f}-{val_loss:.5f}.hdf5"
+      monitor: equal_error_rate
+      mode: min
       save_best_only: true
-      period: 1
+      save_freq: epoch
       verbose: 1
   - name: WandbMetricsLogger
     params:
-      log_freq: epoch
+      log_freq: 1
       initial_global_step: 0 # equivalent with train.start_epoch
   - name: EarlyStopping
     params:

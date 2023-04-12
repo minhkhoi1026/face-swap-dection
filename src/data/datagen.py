@@ -1,10 +1,10 @@
 import numpy as np
 import os
-import keras
+from tensorflow import keras
 import cv2
 import random
 import matplotlib.pyplot as plt
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow import one_hot
 
 from src.utils.retinex import automatedMSRCR
@@ -32,7 +32,7 @@ class DataGenerator(keras.utils.Sequence):
     def on_epoch_end(self):
         'Updates indexes after each epoch'
         self.indexes = np.arange(len(self.list_IDs))
-        if self.shuffle == True:
+        if self.shuffle:
             np.random.shuffle(self.indexes)
 
     def __getitem__(self, index):
@@ -85,6 +85,7 @@ class DataGenerator(keras.utils.Sequence):
              np.empty((self.batch_size, self.dim[0], self.dim[1], 3))]
         y = np.empty((self.batch_size), dtype=int)
 
+
         for i, k in enumerate(indexes):
             image_path = self.list_IDs[k]
             img = cv2.imread(image_path)
@@ -105,7 +106,7 @@ class DataGenerator(keras.utils.Sequence):
 
         if self.num_classes > 1:
             y = one_hot(y, depth=self.num_classes)
-            
+        
         return X, y
 
 def load_dataset_to_generator(data_path, num_classes, bs, dim, type_gen, oversampling=False, shuffle=False):
@@ -117,24 +118,27 @@ def load_image_file_paths(data_path, oversampling=False, shuffle=False):
     image_paths = []
     
     dirs = [os.path.join(data_path, "fake"), os.path.join(data_path, "real")]
-    if oversampling == True:
-        nsample = max(len(os.listdir(x)) for x in dirs) 
+    
+    nsample = max(len(os.listdir(x)) for x in dirs) 
 
-        for folder in dirs:
-            tmp_paths = []
-            for path in os.listdir(folder):
-                tmp_paths.append(os.path.join(folder, path))
+    for folder in dirs:
+        tmp_paths = []
+        for path in os.listdir(folder):
+            tmp_paths.append(os.path.join(folder, path))
+        image_paths.extend(tmp_paths)
+        
+        if oversampling:
+            num_add = nsample - len(tmp_paths)
+            if num_add == 0: continue
+                
             ids = np.arange(len(tmp_paths))
-            choices = np.random.choice(ids, nsample)
-            image_paths.extend([tmp_paths[id] for id in choices])
-            print(len(image_paths))
-    else:
-          for folder in dirs:
-            for path in os.listdir(folder):
-                image_paths.append(os.path.join(folder, path))
+            choices = np.random.choice(ids, num_add)
+            tmp_paths.extend([tmp_paths[id] for id in choices])
+            
+        print(len(image_paths))
     
     # shuffle dataset for training
-    if shuffle == True:
+    if shuffle:
         random.shuffle(image_paths)
 
     return image_paths

@@ -1,6 +1,6 @@
 from src.utils.registry import Registry
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
-from wandb.keras import WandbMetricsLogger
+from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, CSVLogger
+from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint
 import os
 
 CALLBACK_REGISTRY = Registry("CALLBACK")
@@ -20,6 +20,7 @@ CALLBACK_REGISTRY.register(EarlyStopping)
 CALLBACK_REGISTRY.register(ReduceLROnPlateau)
 # callback to log metric to wandb
 CALLBACK_REGISTRY.register(WandbMetricsLogger)
+CALLBACK_REGISTRY.register(WandbModelCheckpoint)
 # callback to log to csv file
 CALLBACK_REGISTRY.register(CSVLogger)
 # callback to save model checkpoint

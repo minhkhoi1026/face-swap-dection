@@ -1,15 +1,8 @@
 python-dotenv
 kaggle
 tqdm
-numpy
-matplotlib
-scikit-learn
-numba
 opencv-python
-tensorflow==2.2.0
-tensorflow_addons==0.11.2
-protobuf==3.20.1
+tensorflow==2.10.0
 mtcnn
 tabulate
-tensorflow_hub
 wandb
