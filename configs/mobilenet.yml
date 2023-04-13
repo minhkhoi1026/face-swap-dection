@@ -1,7 +1,7 @@
 global:
   username: minhkhoi1026
   project_name: hcmus-fsd
-  run_name: Xception
+  run_name: mobile-net
 dataset:
   data_path: casia-fasd/train
   oversampling: true
@@ -19,7 +19,7 @@ data_generator:
 model:
   input_size: 128
   num_classes: 2
-  backbone: Xception
+  backbone: MobileNetV3_Large
   loss: binary_crossentropy
   metrics:
     - categorical_accuracy
@@ -42,7 +42,7 @@ callbacks:
   #     log_best_prefix: "weight-Xception-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}"
   - name: CustomModelCheckpoint
     params:
-      save_dir: weights/Xception
+      save_dir: weights/MobileNetV3_Large
       filepath: "weight-{epoch:02d}-{categorical_accuracy:.2f}-{loss:.5f}-{val_categorical_accuracy:.2f}-{val_loss:.5f}.hdf5"
       monitor: val_categorical_accuracy
       mode: max

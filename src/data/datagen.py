@@ -133,7 +133,7 @@ def load_image_file_paths(data_path, oversampling=False, shuffle=False):
                 
             ids = np.arange(len(tmp_paths))
             choices = np.random.choice(ids, num_add)
-            tmp_paths.extend([tmp_paths[id] for id in choices])
+            image_paths.extend([tmp_paths[id] for id in choices])
             
         print(len(image_paths))
     
