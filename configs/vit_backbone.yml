@@ -1,7 +1,7 @@
 global:
   username: minhkhoi1026
   project_name: hcmus-fsd
-  run_name: sanity-check
+  run_name: ViTB8
 dataset:
   data_path: casia-fasd/sanity
   oversampling: true
@@ -9,22 +9,23 @@ dataset:
   train_split: 0.5
 data_generator:
   train:
-    batch_size: 16
+    batch_size: 4
     type_gen: train
     shuffle: true
   val:
-    batch_size: 16
+    batch_size: 4
     type_gen: val
     shuffle: false
 model:
-  input_size: 128
-  num_classes: 1
-  backbone: Xception
+  input_size: 224
+  num_classes: 2
+  backbone: ViTB8
   loss: binary_crossentropy
   metrics:
-    - equal_error_rate
+    - categorical_accuracy
 train:
   num_worker: 8
+  start_epoch: 0
   start_epoch: 0
   num_epoch: 100
   validate_freq: 1
@@ -41,11 +42,11 @@ callbacks:
   #     log_best_prefix: "weight-Xception-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}"
   - name: CustomModelCheckpoint
     params:
-      save_dir: weights/old
-      filepath: "weight-Xception-{epoch:02d}-{equal_error_rate:.2f}-{loss:.5f}-{val_equal_error_rate:.2f}-{val_loss:.5f}.hdf5"
-      monitor: val_equal_error_rate
+      save_dir: weights/ViTB8
+      filepath: "weight-{epoch:02d}-{categorical_accuracy:.2f}-{loss:.5f}-{val_categorical_accuracy:.2f}-{val_loss:.5f}.hdf5"
+      monitor: val_categorical_accuracy
       mode: max
-      save_best_only: true
+      save_best_only: false
       save_freq: epoch
       verbose: 1
   - name: WandbMetricsLogger

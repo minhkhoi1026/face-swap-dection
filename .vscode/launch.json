@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "src/train.py",
-            "args": ["-c", "configs/sanity.yml"],
+            "args": ["-c", "configs/vit_backbone.yml"],
             "console": "integratedTerminal",
         }
     ]

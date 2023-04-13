@@ -61,10 +61,16 @@ def attention_model(num_classes, backbone = 'MobileNetV3_Small', shape=(256, 256
     elif backbone == 'MobileNetV3_Large':
         stream1 = MobileNetV3_Large(shape, num_classes).build()
         stream2 = MobileNetV3_Large(shape, num_classes).build()
-    else: # MobileNetV3_Small
+    elif backbone == "MobileNetV3_Small": # MobileNetV3_Small
         stream1 = MobileNetV3_Small(shape, num_classes).build()
         stream2 = MobileNetV3_Small(shape, num_classes).build()
-
+    elif backbone == "ViTB8":
+        assert shape == (224, 224, 3), "Shape of vision transformer must be 224x224x3"
+        import tensorflow_hub as hub
+        model_handle = "https://tfhub.dev/sayakpaul/vit_b8_fe/1"
+        stream1 = hub.KerasLayer(model_handle, trainable=True, name="stream1")
+        stream2 = hub.KerasLayer(model_handle, trainable=True, name="stream2")
+        
     input1 = Input(shape)
     input2 = Input(shape)
     output1 = stream1(input1)
@@ -72,11 +78,11 @@ def attention_model(num_classes, backbone = 'MobileNetV3_Small', shape=(256, 256
    
     # rename module so that model checkpoint can save it
     stream1._name = "stream1"
-    for w in stream1.weights:
-        w._handle_name = 'stream1_' + w.name
+    for i in range(len(stream1.weights)):
+        stream1.weights[i]._handle_name = 'stream1_' + stream1.weights[i].name
     stream2._name = "stream2"
-    for w in stream2.weights:
-        w._handle_name = 'stream2_' + w.name
+    for i in range(len(stream2.weights)):
+        stream2.weights[i]._handle_name = 'stream2_' + stream2.weights[i].name
         
     if backbone == 'Xception':
         output1 = GlobalAveragePooling2D(name='avg_pool_1')(output1)

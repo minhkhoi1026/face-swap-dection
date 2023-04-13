@@ -6,7 +6,6 @@ class EqualErrorRate(tf.keras.metrics.Metric):
         super(EqualErrorRate, self).__init__(name=name, **kwargs)
         self.total_batch = self.add_weight(name='total_batch', initializer='zeros')
         self.total_fars = self.add_weight(name='total_fars', initializer='zeros')
-        self.eer = self.add_weight(name='eer', initializer='zeros')
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         # Compute false acceptance and false rejection rates for each threshold
@@ -42,12 +41,8 @@ class EqualErrorRate(tf.keras.metrics.Metric):
 
     def result(self):
         # Compute equal error rate for best threshold
-        eer = self.total_fars / self.total_batch
-
-        return eer * 100
+        return self.total_fars / self.total_batch
 
     def reset_states(self):
-        # Reset weights
         self.total_batch.assign(0)
         self.total_fars.assign(0)
-        # self.total_frrs.assign(0)
