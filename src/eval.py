@@ -24,7 +24,7 @@ def eval(config):
     time_str = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     run_name = f"{config['global']['run_name']}-{time_str}"
     
-    wandb.init(project=config["global"]["project_name"],
+    run = wandb.init(project=config["global"]["project_name"],
 				name=run_name,
 				entity=config["global"]["username"],
 				config=config)
@@ -58,10 +58,12 @@ def eval(config):
     print("-----SAVE RESULT-----")
     # Create a dataframe with two columns
     if config["global"]["save_pandas"]:
-        df = pd.DataFrame({'groundtruth': test_labels, 'predict': test_pred})
-        wandb.Table(dataframe=df)
+        df = pd.DataFrame({'image_path': test_image_paths, 
+                           'groundtruth': [v for v in test_labels], 
+                           'predict': [v for v in test_pred]})
+        run.log({"eval_result": wandb.Table(dataframe=df)})
     
-    if (num_classes == 1):
+    if num_classes == 1:
         test_pred = test_pred.flatten()
     elif num_classes == 2:
         test_pred = argmax(test_pred, axis=1)

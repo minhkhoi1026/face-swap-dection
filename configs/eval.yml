@@ -4,11 +4,11 @@ global:
   run_name: eval
   save_pandas: true
 dataset:
-  data_path: casia-fasd/sanity
+  data_path: casia-fasd/test
   oversampling: false
   shuffle: true
 data_generator:
-  batch_size: 32
+  batch_size: 64
   type_gen: predict
   shuffle: false
 model:
