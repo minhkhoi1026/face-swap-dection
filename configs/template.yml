@@ -30,16 +30,9 @@ train:
   num_epoch: 100
   validate_freq: 1
 optimizer:
-  learning_rate: 0.0001
+  learning_rate: 0.001
   momentum: 0.9
 callbacks:
-  # - name: WandbCallback
-  #   params:
-  #     monitor: val_accuracy
-  #     mode: max
-  #     save_model: true
-  #     save_weights_only: false
-  #     log_best_prefix: "weight-Xception-{epoch:02d}-{accuracy:.2f}-{val_accuracy:.2f}-{val_loss:.5f}"
   - name: CustomModelCheckpoint
     params:
       save_dir: weights/Xception
@@ -57,4 +50,13 @@ callbacks:
     params:
       monitor: val_loss
       patience: 5
+  - name: ReduceLROnPlateau
+    params:
+      monitor: val_loss
+      mode: min
+      factor: 0.5
+      patience: 3
+      min_lr: 0.0001
+
+
 

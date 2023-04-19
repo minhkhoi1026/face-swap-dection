@@ -42,7 +42,7 @@ class DataGenerator(keras.utils.Sequence):
         # Generate data
         X, y = self.__data_generation(indexes)
         if self.type_gen == 'predict':
-            return X
+            return [X]
         else:
             return X, y
 

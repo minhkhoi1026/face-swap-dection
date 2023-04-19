@@ -44,8 +44,8 @@ def attention_model(num_classes, backbone='MobileNetV3_Small', shape=(256, 256, 
         assert shape == (224, 224, 3), "Shape of vision transformer must be 224x224x3"
         import tensorflow_hub as hub
         model_handle = "https://tfhub.dev/sayakpaul/vit_b8_fe/1"
-        stream1 = hub.KerasLayer(model_handle, trainable=True, name="stream1")
-        stream2 = hub.KerasLayer(model_handle, trainable=True, name="stream2")
+        stream1 = hub.KerasLayer(model_handle, trainable=False, name="stream1")
+        stream2 = hub.KerasLayer(model_handle, trainable=False, name="stream2")
     
     # freeze feature extractor
     stream1.trainable = False
@@ -56,7 +56,7 @@ def attention_model(num_classes, backbone='MobileNetV3_Small', shape=(256, 256, 
     feat1 = stream1(input1)
     feat2 = stream2(input2)
    
-    # rename module so that model checkpoint can save it
+    # rename stream1 and stream2 names to avoid duplicate name in model checkpoint
     stream1._name = "stream1"
     for i in range(len(stream1.weights)):
         stream1.weights[i]._handle_name = 'stream1_' + stream1.weights[i].name
@@ -71,11 +71,13 @@ def attention_model(num_classes, backbone='MobileNetV3_Small', shape=(256, 256, 
     dense2 = tf.keras.layers.Dense(dense1.shape[1] // 2, activation="relu", name="dense2")(dense1)
 
     output = tf.keras.layers.Dense(num_classes, activation='softmax', name='predictions')(dense2)
+    
+    model = tf.keras.Model(inputs=[input1, input2], outputs=output)
 
-    return tf.keras.Model(inputs=[input1, input2], outputs=output)
+    return model
 
 if __name__ == "__main__":
-    model = attention_model(2, backbone='Xception')
+    model = attention_model(2, backbone='ViTB8', shape=(224,224,3))
     print(model.summary())
     # from keras.utils import plot_model
     # plot_model(model, 'model.png', show_shapes=True)

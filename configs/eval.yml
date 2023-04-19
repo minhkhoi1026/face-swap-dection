@@ -1,0 +1,22 @@
+global:
+  username: minhkhoi1026
+  project_name: hcmus-fsd
+  run_name: eval
+  save_pandas: true
+dataset:
+  data_path: casia-fasd/sanity
+  oversampling: false
+  shuffle: true
+data_generator:
+  batch_size: 32
+  type_gen: predict
+  shuffle: false
+model:
+  weight_path: weights/Xception/weight-53-0.95-0.13564-0.99-0.04592.hdf5
+  input_size: 128
+  num_classes: 2
+  backbone: Xception
+  loss: binary_crossentropy
+  metrics:
+    - categorical_accuracy
+

@@ -16,4 +16,6 @@ source ~/miniconda3/etc/profile.d/conda.sh
 
 conda activate fsd 
 
-python eval.py --bs 20 --dim 128 --backbone Xception --num-classes 1 --weight weights/weight-20220820-124207-Xception-09-0.90-0.82-0.40303.hdf5
+pip install .
+
+python src/eval.py 

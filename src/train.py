@@ -13,6 +13,7 @@ from src.callback import CALLBACK_REGISTRY
 from src.utils.opt import Opts
 from src.utils.loading import load_gpu
 import src.metrics # import to register custom metric to Tensorflow
+from tensorflow.python.keras import backend as K
 
 def train(config):
     # init new wandb run
@@ -68,6 +69,10 @@ def train(config):
     optimizer = SGD(**config["optimizer"])
     # optimizer = Lookahead(RectifiedAdam())
     model.compile(optimizer=optimizer, loss=config["model"]["loss"], metrics=config["model"]["metrics"])
+    # rename optimizer weights to avoid duplicate name in model checkpoint
+    with K.name_scope(model.optimizer.__class__.__name__):
+        for i, var in enumerate(model.optimizer.weights):
+            model.optimizer.weights[i]._handle_name = 'variable{}'.format(i)
 
     print("---------INIT CALLBACK---------")
     callbacks = [
