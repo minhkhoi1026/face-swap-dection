@@ -1,4 +1,6 @@
 """source: https://github.com/ondyari/FaceForensics + https://github.com/ipazc/mtcnn"""
+import logging
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
 import os
 import cv2
 from tqdm import tqdm
@@ -10,17 +12,14 @@ from numba import jit
 tf.get_logger().setLevel('ERROR')
 
 
-detector = MTCNN()
+detector = MTCNN(min_face_size=200)
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", 
-                        choices = ["casia-fasd", "oulu-npu", "replay-attack"], 
-                        help="specify dataset name for frame extraction", 
-                        default="casia-fasd")
     parser.add_argument("--source", help="path of source data", required=True)
     parser.add_argument("--dest", help="path of destination frame store", required=True)
     parser.add_argument("--sampling-ratio", help="specify a ratio x for frame sampling (0 < x <= 1)", required=True)
+    parser.add_argument("--threshold", help="specify a minimum confidence threshold c for face detection (0 < c <= 1)", default=0.9)
     
     return parser.parse_args()
 
@@ -30,9 +29,10 @@ def extract_faces(image, output_path, prefix):
         faces = detector.detect_faces(img)
     crop_face = 0
     for id, face in enumerate(faces):
-        x, y, w, h = face['box']
-        crop_face = cv2.cvtColor(img[y:y+h, x:x+w], cv2.COLOR_BGR2RGB)
-        cv2.imwrite(os.path.join(output_path, '{}_{:02d}.png'.format(prefix, id)), crop_face)
+        if face["confidence"] >= confidence_threshold:
+            x, y, w, h = face['box']
+            crop_face = cv2.cvtColor(img[y:y+h, x:x+w], cv2.COLOR_BGR2RGB)
+            cv2.imwrite(os.path.join(output_path, '{}_{:02d}.png'.format(prefix, id)), crop_face)
 
 @jit
 def extract_frames(data_path, output_path, prefix_images, sampling_ratio):
@@ -84,5 +84,6 @@ args = parse_args()
 
 source_path = args.source
 dest_path = args.dest
+confidence_threshold = args.threshold
 sampling_ratio = float(args.sampling_ratio)
 extract_all_individual(source_path, dest_path, sampling_ratio)

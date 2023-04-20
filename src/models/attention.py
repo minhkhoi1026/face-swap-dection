@@ -21,7 +21,7 @@ class Attention(tf.keras.layers.Layer):
 
     def call(self, X):
         # X (bs, 2, e) with bs=batch_size, e=embed_dim
-        # d (bs, 2,) multiple each feature vector with kernel
+        # d (bs, 2) multiple each feature vector with kernel
         d = tf.tensordot(X, self.q, axes=1) 
         # w (bs, 2) softmax vector as weight to fusion
         w = tf.nn.softmax(d, axis=1)

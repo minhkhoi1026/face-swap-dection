@@ -53,7 +53,10 @@ def eval(config):
     model.load_weights(config["model"]["weight_path"])
     
     print("-----PREDICT-----")
-    test_pred = model.predict(test_generator, verbose=1)
+    test_pred = model.predict(test_generator, 
+                              verbose=1)
+    # strip output to avoid redundant output when number of samples does not divide by batch size
+    test_pred = test_pred[:len(test_labels)]
 
     print("-----SAVE RESULT-----")
     # Create a dataframe with two columns
@@ -66,7 +69,7 @@ def eval(config):
     if num_classes == 1:
         test_pred = test_pred.flatten()
     elif num_classes == 2:
-        test_pred = argmax(test_pred, axis=1)
+        test_pred = [x[1] for x in test_pred]
 
     print(calculate_err(test_labels, test_pred))
 
