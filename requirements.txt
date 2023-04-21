@@ -2,7 +2,7 @@ python-dotenv
 kaggle
 tqdm
 opencv-python
-tensorflow==2.10.0
+lightning
 mtcnn
 tabulate
 wandb

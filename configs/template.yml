@@ -31,7 +31,7 @@ train:
   validate_freq: 1
 optimizer:
   learning_rate: 0.001
-  momentum: 0.
+  momentum: 0.9
 callbacks:
   - name: CustomModelCheckpoint
     params:
