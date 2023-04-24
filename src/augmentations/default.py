@@ -35,7 +35,7 @@ TRANSFORM_REGISTRY.register(ToTensorV2, prefix='Alb')
 @TRANSFORM_REGISTRY.register()
 def train_classify_tf(img_size: int):
     return Compose([
-        Resize(128, 128),
+        Resize(img_size, img_size),
         HorizontalFlip(p=0.5),
         VerticalFlip(p=0.5),
         ShiftScaleRotate(rotate_limit=[-10,10], shift_limit=[0.15,0.15], scale_limit=[0.75, 1.25]),
@@ -45,4 +45,4 @@ def train_classify_tf(img_size: int):
 
 @TRANSFORM_REGISTRY.register()
 def test_classify_tf(img_size: int):
-    return None
+    return Resize(img_size)
