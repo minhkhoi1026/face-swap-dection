@@ -12,5 +12,3 @@ CALLBACK_REGISTRY = Registry("CALLBACK")
 CALLBACK_REGISTRY.register(EarlyStopping)
 CALLBACK_REGISTRY.register(ModelCheckpoint)
 CALLBACK_REGISTRY.register(LearningRateMonitor)
-# TODO: add WandB visualizer callback
-# CALLBACK_REGISTRY.register(VisualizerCallback)

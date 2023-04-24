@@ -128,12 +128,12 @@ class AbstractModel(pl.LightningModule):
         return val_loader
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(
-            self.parameters(), self.cfg["trainer"]["lr"], weight_decay=0.0001
+        optimizer = torch.optim.SGD(
+            self.parameters(), **self.cfg["optimizer"]
         )
 
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, **self.cfg["trainer"]["lr_scheduler"]["params"]
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, **self.cfg["lr_scheduler"]
         )
 
         return {

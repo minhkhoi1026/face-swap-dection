@@ -4,6 +4,11 @@ import random
 import pandas as pd
 import torch
 import torch.nn.functional as F
+from albumentations import Compose, Normalize
+import cv2
+# https://github.com/albumentations-team/albumentations/issues/1246
+cv2.setNumThreads(0)
+from albumentations.pytorch.transforms import ToTensorV2
 
 from src.utils.loading import load_image_file_paths, generate_label_from_path
 from src.utils.retinex import automatedMSRCR
@@ -29,6 +34,10 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
         self.image_paths = load_image_file_paths(data_path, oversampling)
         self.labels = generate_label_from_path(self.image_paths)
         self.img_transform = img_transform
+        self.img_normalize = Compose([
+            
+            ToTensorV2(),
+        ])
         self.num_class = num_class
 
     def __len__(self):
@@ -39,17 +48,17 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         if self.img_transform:
-            img = np.asarray(self.img_transform(img))
+            img = self.img_transform(image=img)["image"] # only works with albumentations
             
         new_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         new_img = np.expand_dims(new_img, -1)
         new_img = automatedMSRCR(new_img, [10, 20, 30])
         new_img = cv2.cvtColor(new_img[:, :, 0], cv2.COLOR_GRAY2RGB)
         
-        img = img/255.0
-        new_img = new_img/255.0
+        img = self.img_normalize(image=img)["image"] # only works with albumentations
+        new_img =  self.img_normalize(image=new_img)["image"] # only works with albumentations
         
-        return torch.tensor(img), torch.tensor(new_img)
+        return img, new_img 
         
 
     def __getitem__(self, idx):
@@ -77,19 +86,24 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
         return batch_as_dict
 
 if __name__ == "__main__":
-    from torchvision import transforms
-    dataset = FaceSpoofingDataset(data_path="casia-fasd/sanity", 
-                                  oversampling=True, 
-                                  img_transform=transforms.Compose(
-                                    [ 
-                                        transforms.ToPILImage(),
-                                        transforms.Resize((128, 128)),
-                                        transforms.RandomAffine(degrees=[-10,10], translate=[0.15,0.15], scale=[0.75, 1.25]), 
-                                        transforms.RandomHorizontalFlip(0.5),
-                                        transforms.ColorJitter(brightness=0.25),
-                                    ]
-                                    )
-                                )
+    from albumentations import (Compose, Normalize, RandomBrightnessContrast,
+                            RandomCrop, Resize, RGBShift, ShiftScaleRotate,
+                            SmallestMaxSize, MotionBlur, GaussianBlur,
+                            MedianBlur, Blur, RandomRotate90, HorizontalFlip,
+                            VerticalFlip, HueSaturationValue, RandomSizedCrop,
+                            IAASharpen)
+    img_transform = Compose([
+        Resize(128, 128),
+        HorizontalFlip(p=0.5),
+        VerticalFlip(p=0.5),
+        ShiftScaleRotate(rotate_limit=[-10,10], shift_limit=[0.15,0.15], scale_limit=[0.75, 1.25]),
+        RandomBrightnessContrast(brightness_limit=0.25),
+    ])
+    dataset = FaceSpoofingDataset(
+        data_path="casia-fasd/sanity", 
+        oversampling=True, 
+        img_transform=img_transform
+    )
     batch = dataset.collate_fn([dataset.__getitem__(0), dataset.__getitem__(1)])
     print(batch["imgs"].shape)
     print(batch["msr_imgs"].shape)

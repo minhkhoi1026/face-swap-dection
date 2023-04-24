@@ -1,0 +1,54 @@
+global:
+  username: minhkhoi1026
+  project_name: hcmus-fsd
+  run_name: Xception
+dataset:
+  data_path: casia-fasd/train
+  oversampling: true
+  train_split: 0.85
+data_generator:
+  train:
+    batch_size: 64
+    shuffle: true
+  val:
+    batch_size: 64
+    shuffle: false
+model:
+  input_size: 128
+  num_classes: 2
+  backbone: Xception
+  loss: binary_crossentropy
+  metrics:
+    - categorical_accuracy
+train:
+  num_worker: 8
+  start_epoch: 0
+  start_epoch: 0
+  num_epoch: 100
+  validate_freq: 1
+optimizer:
+  learning_rate: 0.001
+  momentum: 0.9
+lr_scheduler:
+  monitor: val_loss
+  mode: min
+  factor: 0.5
+  patience: 5
+  min_lr: 0.0001
+callbacks:
+  - name: ModelCheckpoint
+    params:
+      filename: "Xception-{epoch:02d}-{train_categorical_accuracy:.2f}-{val_categorical_accuracy:.2f}-{train_loss:.5f}-{val_loss:.5f}"
+      monitor: "val_loss"
+      verbose: True
+      save_top_k: 5
+      mode: min
+  - name: LearningRateMonitor
+    params:
+      logging_interval: true
+  - name: EarlyStopping
+    params:
+      
+
+
+
