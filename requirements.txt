@@ -7,3 +7,5 @@ mtcnn
 tabulate
 wandb
 pandas
+numba
+mediapipe

@@ -1,9 +1,10 @@
 # dataset-related info
 wandb/
 casia-fasd/
-dataset/
+data/
 weights/
 logs/
+data_extract/
 
 # slurm
 slurm*
