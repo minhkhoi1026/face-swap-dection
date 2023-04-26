@@ -2,10 +2,8 @@ from src.utils.registry import Registry
 
 EXTRACTOR_REGISTRY = Registry("EXTRACTOR")
 
-from src.extractor.bert_extractor import LangExtractor
-from src.extractor.base_pc_extractor import PointNetExtractor
-from src.extractor.curve_net import CurveNet
+from src.extractor.efficient_net import EfficientNetExtractor
+from src.extractor.vit_net import VitNetExtractor
 
-EXTRACTOR_REGISTRY.register(PointNetExtractor)
-EXTRACTOR_REGISTRY.register(LangExtractor)
-EXTRACTOR_REGISTRY.register(CurveNet)
+EXTRACTOR_REGISTRY.register(EfficientNetExtractor)
+EXTRACTOR_REGISTRY.register(VitNetExtractor)

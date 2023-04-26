@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import torch
 from torchvision import transforms
 import random
-from src.augmentations import TRANSFORM_REGISTRY
+from src.augmentation import TRANSFORM_REGISTRY
 from src.dataset import DATASET_REGISTRY
 
 from src.extractor.base_extractor import ExtractorNetwork
@@ -146,10 +146,9 @@ class AbstractModel(pl.LightningModule):
 class MLP(nn.Module):
     # layer_sizes[0] is the dimension of the input
     # layer_sizes[-1] is the dimension of the output
-    def __init__(self, extractor: ExtractorNetwork, latent_dim=128, num_hidden_layer=2):
+    def __init__(self, feature_dim, latent_dim=128, num_hidden_layer=2):
         super().__init__()
-        self.extractor = extractor
-        self.feature_dim = extractor.feature_dim
+        self.feature_dim = feature_dim
 
         layers = []
         current_reduced_dim = self.feature_dim
@@ -167,6 +166,5 @@ class MLP(nn.Module):
         self.mlp = nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.extractor.get_embedding(x)
         x = self.mlp(x)
         return x
