@@ -10,6 +10,8 @@ from torch.utils.data import DataLoader
 import torch
 from torchvision import transforms
 import random
+from src.augmentations import TRANSFORM_REGISTRY
+from src.dataset import DATASET_REGISTRY
 
 from src.extractor.base_extractor import ExtractorNetwork
 
@@ -26,22 +28,19 @@ class AbstractModel(pl.LightningModule):
         if stage in ["fit", "validate", "test"]:
             # generate train and validation pytorch dataset
             # image transform for data augmentation
-            train_img_transform = transforms.Compose(
-                [ 
-                    transforms.ToPILImage(),
-                    transforms.Resize((self.cfg["input_size"], self.cfg["input_size"])),
-                    transforms.RandomAffine(degrees=[-10,10], translate=[0.15,0.15], scale=[0.75, 1.25]), 
-                    transforms.RandomHorizontalFlip(0.5),
-                    transforms.ColorJitter(brightness=0.25),
-                ]
-            )
+            image_size = self.cfg["data"]["args"]["SIZE"]
+            image_transform_train = TRANSFORM_REGISTRY.get(
+                'train_classify_tf')(img_size=image_size)
+            image_transform_val = TRANSFORM_REGISTRY.get('test_classify_tf')(
+                img_size=image_size)
 
-            self.train_dataset = TextPointCloudDataset(
-                img_transform=train_img_transform,
+            self.train_dataset = DATASET_REGISTRY.get(self.cfg["dataset"]["train"]["name"])(
+                img_transform=image_transform_train,
                 **self.cfg["dataset"]["train"]["params"],
             )
 
-            self.val_dataset = TextPointCloudDataset(
+            self.val_dataset = DATASET_REGISTRY.get(self.cfg["dataset"]["val"]["name"])(
+                img_transform=image_transform_val,
                 **self.cfg["dataset"]["val"]["params"],
             )
 
@@ -57,7 +56,7 @@ class AbstractModel(pl.LightningModule):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def compute_loss(self, forwarded_batch, input_batch):
+    def compute_loss(self, forwarded_output, input_batch):
         """
         Function to compute loss
         Args:
@@ -85,13 +84,13 @@ class AbstractModel(pl.LightningModule):
         loss = self.compute_loss(forwarded_batch=forwarded_batch, input_batch=batch)
         # 3. Update metric for each batch
         self.log("val_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.metric_evaluator.append(
-            g_emb=forwarded_batch["pc_embedding_feats"].float().clone().detach(),
-            q_emb=forwarded_batch["query_embedding_feats"].float().clone().detach(),
-            query_ids=batch["query_ids"],
-            gallery_ids=batch["point_cloud_ids"],
-            target_ids=batch["point_cloud_ids"],
-        )
+        # self.metric_evaluator.append(
+        #     g_emb=forwarded_batch["pc_embedding_feats"].float().clone().detach(),
+        #     q_emb=forwarded_batch["query_embedding_feats"].float().clone().detach(),
+        #     query_ids=batch["query_ids"],
+        #     gallery_ids=batch["point_cloud_ids"],
+        #     target_ids=batch["point_cloud_ids"],
+        # )
 
         return {"loss": loss}
 
@@ -103,13 +102,15 @@ class AbstractModel(pl.LightningModule):
         Args:
             outputs: output of validation step
         """
-        self.log_dict(
-            self.metric_evaluator.evaluate(),
-            prog_bar=True,
-            on_step=False,
-            on_epoch=True,
-        )
-        self.metric_evaluator.reset()
+        # TODO: add EER evaluate metric
+        # self.log_dict(
+        #     self.metric_evaluator.evaluate(),
+        #     prog_bar=True,
+        #     on_step=False,
+        #     on_epoch=True,
+        # )
+        # self.metric_evaluator.reset()
+        pass
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         train_loader = DataLoader(

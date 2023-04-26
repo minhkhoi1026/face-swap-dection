@@ -12,8 +12,10 @@ from albumentations.pytorch.transforms import ToTensorV2
 
 from src.utils.loading import load_image_file_paths, generate_label_from_path
 from src.utils.retinex import automatedMSRCR
+from . import DATASET_REGISTRY, default_loader
 
 
+@DATASET_REGISTRY.register()
 class FaceSpoofingDataset(torch.utils.data.Dataset):
     def __init__(
         self,
