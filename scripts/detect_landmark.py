@@ -1,70 +1,48 @@
+"""source: https://github.com/1adrianb/face-alignment """
 import os
 import cv2
+from tqdm import tqdm
+import argparse
+import face_alignment
 import json
-import mediapipe as mp
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
-mp_face_mesh = mp.solutions.face_mesh
-
-src = "./data_extract/deepfaker_app/sample"
-dst = "./data_extract/deepfaker_app/face_landmarks"
-vis = "./data_extract/deepfaker_app/face_landmarks_vis"
+from numba import jit
 
 
-drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
-def visualize(annotated_image,face_landmarks):
-  mp_drawing.draw_landmarks(
-      image=annotated_image,
-      landmark_list=face_landmarks,
-      connections=mp_face_mesh.FACEMESH_TESSELATION,
-      landmark_drawing_spec=None,
-      connection_drawing_spec=mp_drawing_styles
-      .get_default_face_mesh_tesselation_style())
-  mp_drawing.draw_landmarks(
-      image=annotated_image,
-      landmark_list=face_landmarks,
-      connections=mp_face_mesh.FACEMESH_CONTOURS,
-      landmark_drawing_spec=None,
-      connection_drawing_spec=mp_drawing_styles
-      .get_default_face_mesh_contours_style())
-  mp_drawing.draw_landmarks(
-      image=annotated_image,
-      landmark_list=face_landmarks,
-      connections=mp_face_mesh.FACEMESH_IRISES,
-      landmark_drawing_spec=None,
-      connection_drawing_spec=mp_drawing_styles
-      .get_default_face_mesh_iris_connections_style())
-  cv2.imwrite("{}_landmarks_vis.png".format(os.path.join(vis,dir,name)), annotated_image)
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--source", help="path of source data", required=True)
+    parser.add_argument("--dest", help="path of destination frame store", required=True)
+    
+    return parser.parse_args()
+
+fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
+def extract_frames(data_path, output_path, prefix):
+    image = cv2.imread(data_path)
+    preds = fa.get_landmarks(image)
+    lists = preds[0].tolist()
+    
+    os.makedirs(output_path, exist_ok = True)
+    with open('{}.json'.format(os.path.join(output_path,prefix)), 'w', encoding ='utf8') as json_file:
+        json.dump(lists, json_file, separators=(',',':'))
 
 
-def write_data(face_landmarks):
-  landmarks_data = list()
-  for data_point in face_landmarks.landmark:
-    landmarks_data.append({"x":data_point.x,"y":data_point.y,"z":data_point.z})
-  json_object = json.dumps(landmarks_data, indent=4)
-  with open("{}_landmark.json".format(os.path.join(dst,dir,name)), "w") as outfile:
-    outfile.write(json_object)
+@jit
+def detect_all_image(source_path, dest_path):
+    """Extracts all videos file structure"""
+    for path, _, files in os.walk(source_path):
+        relative_path = os.path.relpath(path, source_path)
+        for img_file in tqdm(files.sort(), desc=relative_path):
+            # prefix of image file name
+            img_name = os.path.splitext(img_file)[0]
+            
+            # folder for store image base on type of image
+            image_path = os.path.join(dest_path, relative_path)
+            
+            extract_frames(os.path.join(source_path, relative_path, img_file),
+                        image_path, img_name)
 
+args = parse_args()
 
-with mp_face_mesh.FaceMesh(
-    static_image_mode=True,
-    max_num_faces=1,
-    refine_landmarks=True,
-    min_detection_confidence=0.5) as face_mesh:
-  for dir in os.listdir(src):
-    for file in os.listdir(os.path.join(src,dir)):
-      name, ext = os.path.splitext(file)
-      image = cv2.imread(os.path.join(src,dir,file))
-      # Convert the BGR image to RGB before processing.
-      results = face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-
-      # Print and draw face mesh landmarks on the image.
-      # for face_landmarks in results.multi_face_landmarks:
-      if not results.multi_face_landmarks:
-        print("No face in {}".format(os.path.join(dir,file)))
-        continue
-      face_landmarks = results.multi_face_landmarks[0]
-
-      write_data(face_landmarks)
-        
-      visualize(image,face_landmarks)
+source_path = args.source
+dest_path = args.dest
+detect_all_image(source_path, dest_path)
