@@ -153,7 +153,8 @@ def extract_all_video(source_path, dest_path, sampling_ratio):
     """Extracts all videos file structure"""
     for path, _, files in os.walk(source_path):
         relative_path = os.path.relpath(path, source_path)
-        for video in tqdm(files.sort(), desc=relative_path):
+        files.sort()
+        for video in tqdm(files, desc=relative_path):
             # prefix of image file name
             video_name = os.path.splitext(video)[0]
             

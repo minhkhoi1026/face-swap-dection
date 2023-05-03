@@ -70,7 +70,8 @@ def extract_landmark(image_path, output_path, prefix, thickness_percentage, blur
 def extract_all_image(source_path, dest_path, thickness, blur):
     for path, _, files in os.walk(source_path):
         relative_path = os.path.relpath(path, source_path)
-        for file in tqdm(files.sort(), desc=relative_path):
+        files.sort()
+        for file in tqdm(files, desc=relative_path):
             image_name = os.path.splitext(file)[0]
             input_path = os.path.join(source_path, relative_path, file)
 

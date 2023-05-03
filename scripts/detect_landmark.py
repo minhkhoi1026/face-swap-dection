@@ -31,7 +31,8 @@ def detect_all_image(source_path, dest_path):
     """Extracts all videos file structure"""
     for path, _, files in os.walk(source_path):
         relative_path = os.path.relpath(path, source_path)
-        for img_file in tqdm(files.sort(), desc=relative_path):
+        files.sort()
+        for img_file in tqdm(files, desc=relative_path):
             # prefix of image file name
             img_name = os.path.splitext(img_file)[0]
             
