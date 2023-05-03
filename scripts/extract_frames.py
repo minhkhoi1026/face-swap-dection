@@ -1,4 +1,4 @@
-"""source: https://github.com/ondyari/FaceForensics + https://github.com/ipazc/mtcnn"""
+"""source: https://github.com/ondyari/FaceForensics + https://github.com/ipazc/mtcnn + https://github.com/google/mediapipe/blob/master/docs/solutions/face_mesh.md """
 import logging
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 import os
@@ -8,6 +8,7 @@ from mtcnn import MTCNN
 import tensorflow as tf
 import argparse
 import mediapipe as mp
+import math
 from numba import jit
 
 tf.get_logger().setLevel('ERROR')
@@ -20,16 +21,17 @@ def parse_args():
     parser.add_argument("--dest", help="path of destination frame store", required=True)
     parser.add_argument("--sampling-ratio", help="specify a ratio x for frame sampling (0 < x <= 1)", required=True)
     parser.add_argument("--threshold", help="specify a minimum confidence threshold c for face detection (0 < c <= 1)", default=0.9)
-    parser.add_argument("--type", help="choices in {casia_fasd, deepfaker_app}", choices=["casia_fasd", "normal"], default="deepfaker_app")
+    parser.add_argument("--extract-type", help="choices in {frame, face}", choices=["frame", "face"], default="frame")
+    parser.add_argument("--dataset-type", help="choices in {casia, normal}", choices=["casia", "normal"], default="normal")
+    parser.add_argument("--face-size", help="maximun of face width, default = 200", default=200)
     
     return parser.parse_args()
 
 
 detector = MTCNN(min_face_size=200)
 def detect_face_by_mtcnn(image):
-    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     with tf.device('/GPU:0'):
-        faces = detector.detect_faces(img)
+        faces = detector.detect_faces(image)
     max_face_size = 0
     iH, iW, _ = image.shape
     min_x = iW
@@ -56,28 +58,49 @@ face_mesh = mp_face_mesh.FaceMesh(
             min_detection_confidence=0.5)
 def detect_face_by_face_mesh(image):
     # Convert the BGR image to RGB before processing.
-    results = face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    results = face_mesh.process(image)
 
     iH, iW, _ = image.shape
     if not results.multi_face_landmarks:
         return iW, iH, 0, 0
     face_landmarks = results.multi_face_landmarks[0]
-    list_x = [data_point.x for data_point in face_landmarks.landmark]
-    list_y = [data_point.y for data_point in face_landmarks.landmark]
+    list_x = [int(data_point.x * iW) for data_point in face_landmarks.landmark]
+    list_y = [int(data_point.y * iH) for data_point in face_landmarks.landmark]
     return min(list_x), min(list_y), max(list_x), max(list_y)
 
 
 def extract_faces(image, output_path, prefix):
-    min_x1, min_y1, max_x1, max_y1 = detect_face_by_mtcnn(image)
-    min_x2, min_y2, max_x2, max_y2 = detect_face_by_face_mesh(image)
+    # print(type(image))
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    iH, iW, _ = img.shape
+
+    min_x1, min_y1, max_x1, max_y1 = detect_face_by_mtcnn(img)
+    min_x2, min_y2, max_x2, max_y2 = detect_face_by_face_mesh(img)
 
     min_x = min(min_x1, min_x2)
     min_y = min(min_y1, min_y2)
     max_x = max(max_x1, max_x2)
     max_y = max(max_y1, max_y2)
+    if max_x <= min_x or max_y <= min_y:
+        print("no face in {}".format(prefix))
+        return
 
-    crop_face = cv2.cvtColor(image[min_y:max_y, min_x:max_x], cv2.COLOR_BGR2RGB)
-    cv2.imwrite(os.path.join(output_path, '{}.png'.format(prefix)), crop_face)
+    while max_x - min_x > face_size:
+        min_x //= 2
+        min_y //= 2
+        max_x = math.ceil(max_x / 2)
+        max_y = math.ceil(max_y / 2)
+        iH //= 2
+        iW //= 2
+    
+    resized_img = cv2.resize(image, (iW,iH))
+
+    os.makedirs(output_path, exist_ok = True)
+    if extract_type == "frame":
+        cv2.imwrite(os.path.join(output_path, '{}.png'.format(prefix)), resized_img)
+    else:
+        crop_face = resized_img[min_y:max_y, min_x:max_x]
+        cv2.imwrite(os.path.join(output_path, '{}.png'.format(prefix)), crop_face)
 
 @jit
 def extract_frames(data_path, output_path, prefix_images, sampling_ratio):
@@ -98,11 +121,9 @@ def extract_frames(data_path, output_path, prefix_images, sampling_ratio):
         if not frame_num % nframe == 0:
             continue
         
-        os.makedirs(output_path, exist_ok = True)
-        cv2.imwrite(os.path.join(output_path, '{}_{:04d}.png'.format(prefix_images, frame_num)), image)
+        prefix = '{}_{:04d}'.format(prefix_images, frame_num)
         # extract faces from frame
-        # prefix_face_img = '{}_{:04d}'.format(prefix_images, frame_num)
-        # extract_faces(image, output_path, prefix_face_img) # extract faces from single image
+        extract_faces(image, output_path, prefix) # extract faces from single image
     reader.release()
 
 @jit
@@ -132,7 +153,7 @@ def extract_all_video(source_path, dest_path, sampling_ratio):
     """Extracts all videos file structure"""
     for path, _, files in os.walk(source_path):
         relative_path = os.path.relpath(path, source_path)
-        for video in tqdm(files, desc=relative_path):
+        for video in tqdm(files.sort(), desc=relative_path):
             # prefix of image file name
             video_name = os.path.splitext(video)[0]
             
@@ -149,8 +170,10 @@ source_path = args.source
 dest_path = args.dest
 confidence_threshold = args.threshold
 sampling_ratio = float(args.sampling_ratio)
-dataset_type = args.type
-if dataset_type == "casia_fasd":
+dataset_type = args.dataset_type
+extract_type = args.extract_type
+face_size = args.face_size
+if dataset_type == "casia":
     extract_all_individual(source_path, dest_path, sampling_ratio)
 else:
     extract_all_video(source_path, dest_path, sampling_ratio)
