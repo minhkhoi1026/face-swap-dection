@@ -9,3 +9,4 @@ wandb
 pandas
 numba
 mediapipe
+face_alignment
