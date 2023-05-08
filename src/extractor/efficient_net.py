@@ -1,9 +1,9 @@
 from efficientnet_pytorch import EfficientNet
-
+from . import EXTRACTOR_REGISTRY
 from src.extractor.base_extractor import ExtractorNetwork
 
-
-class EfficientNetExtractor(ExtractorNetwork()):
+@EXTRACTOR_REGISTRY.register()
+class EfficientNetExtractor(ExtractorNetwork):
     def __init__(self, version, from_pretrained=True, freeze=False):
         super().__init__()
         assert version in range(8)

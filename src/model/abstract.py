@@ -28,20 +28,23 @@ class AbstractModel(pl.LightningModule):
         if stage in ["fit", "validate", "test"]:
             # generate train and validation pytorch dataset
             # image transform for data augmentation
-            image_size = self.cfg["data"]["args"]["SIZE"]
+            image_size = self.cfg["model"]["input_size"]
             image_transform_train = TRANSFORM_REGISTRY.get(
                 'train_classify_tf')(img_size=image_size)
             image_transform_val = TRANSFORM_REGISTRY.get('test_classify_tf')(
                 img_size=image_size)
+            img_normalize = TRANSFORM_REGISTRY.get("img_normalize")()
 
-            self.train_dataset = DATASET_REGISTRY.get(self.cfg["dataset"]["train"]["name"])(
+            self.train_dataset = DATASET_REGISTRY.get(self.cfg["dataset"]["name"])(
                 img_transform=image_transform_train,
-                **self.cfg["dataset"]["train"]["params"],
+                img_normalize=img_normalize,
+                **self.cfg["dataset"]["args"]["train"],
             )
 
-            self.val_dataset = DATASET_REGISTRY.get(self.cfg["dataset"]["val"]["name"])(
+            self.val_dataset = DATASET_REGISTRY.get(self.cfg["dataset"]["name"])(
                 img_transform=image_transform_val,
-                **self.cfg["dataset"]["val"]["params"],
+                img_normalize=img_normalize,
+                **self.cfg["dataset"]["args"]["val"],
             )
 
     @abc.abstractmethod
@@ -116,7 +119,7 @@ class AbstractModel(pl.LightningModule):
         train_loader = DataLoader(
             dataset=self.train_dataset,
             collate_fn=self.train_dataset.collate_fn,
-            **self.cfg["data_loader"]["train"]["params"],
+            **self.cfg["data_loader"]["train"]["args"],
         )
         return train_loader
 
@@ -124,22 +127,25 @@ class AbstractModel(pl.LightningModule):
         val_loader = DataLoader(
             dataset=self.val_dataset,
             collate_fn=self.val_dataset.collate_fn,
-            **self.cfg["data_loader"]["val"]["params"],
+            **self.cfg["data_loader"]["val"]["args"],
         )
         return val_loader
 
     def configure_optimizers(self):
-        optimizer = torch.optim.SGD(
+        optimizer = torch.optim.AdamW(
             self.parameters(), **self.cfg["optimizer"]
         )
 
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, **self.cfg["lr_scheduler"]
+            optimizer, **self.cfg["lr_scheduler"]["args"]
         )
 
         return {
             "optimizer": optimizer,
-            "lr_scheduler": {"scheduler": scheduler, "interval": "epoch"},
+            "lr_scheduler": {"scheduler": scheduler,
+                             "monitor": self.cfg["lr_scheduler"]["monitor"], 
+                             "interval": "epoch"
+                            },
         }
 
 

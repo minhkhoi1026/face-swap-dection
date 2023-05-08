@@ -45,4 +45,10 @@ def train_classify_tf(img_size: int):
 
 @TRANSFORM_REGISTRY.register()
 def test_classify_tf(img_size: int):
-    return Resize(img_size)
+    return Resize(img_size, img_size)
+
+@TRANSFORM_REGISTRY.register()
+def img_normalize():
+    return Compose([
+        Normalize([0.49139968, 0.48215841, 0.44653091], [0.24703223, 0.24348513, 0.26158784]),
+        ToTensorV2()])

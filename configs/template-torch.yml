@@ -1,53 +1,78 @@
 global:
   username: minhkhoi1026
   project_name: hcmus-fsd
-  run_name: Xception
+  run_name: single-vit224
+  save_dir: logs
+  SEED: 47
+  resume: null
 dataset:
-  data_path: casia-fasd/train
-  oversampling: true
-  train_split: 0.85
-data_generator:
+  name: FaceSpoofingDataset
+  args:
+    train:
+      data_path: casia-fasd/sanity
+      oversampling: true
+    val:
+      data_path: casia-fasd/sanity
+      oversampling: true
+data_loader:
   train:
-    batch_size: 64
-    shuffle: true
+    args:
+      batch_size: 64
+      num_workers: 8
+      shuffle: true
   val:
-    batch_size: 64
-    shuffle: false
+    args:
+      batch_size: 64
+      num_workers: 8
+      shuffle: false
 model:
-  input_size: 128
+  name: SingleHeadFrameClassifier
+  input_size: 224
   num_classes: 2
-  backbone: Xception
-  loss: binary_crossentropy
-  metrics:
-    - categorical_accuracy
-train:
+  extractor:
+    img_encoder:
+      name: VitNetExtractor
+      args:
+        version: vit_base_patch16_224
+        from_pretrained: True
+        freeze: False
+trainer:
   num_worker: 8
   start_epoch: 0
   start_epoch: 0
-  num_epoch: 100
-  validate_freq: 1
+  num_epochs: 100
+  evaluate_interval: 1
+  log_interval: 1
+  use_fp16: True
+  debug: False
 optimizer:
-  learning_rate: 0.001
-  momentum: 0.9
+  lr: 0.0001
 lr_scheduler:
+  name: ReduceLROnPlateau
+  args:
+    mode: min
+    factor: 0.5
+    patience: 5
+    min_lr: 0.0001
   monitor: val_loss
-  mode: min
-  factor: 0.5
-  patience: 5
-  min_lr: 0.0001
 callbacks:
   - name: ModelCheckpoint
-    params:
-      filename: "Xception-{epoch:02d}-{train_categorical_accuracy:.2f}-{val_categorical_accuracy:.2f}-{train_loss:.5f}-{val_loss:.5f}"
+    args:
+      filename: "singleVit224-{epoch}-{val_loss:.4f}"
       monitor: "val_loss"
       verbose: True
-      save_top_k: 5
+      save_top_k: 3
+      mode: max
+  - name: EarlyStopping
+    args:
+      monitor: "val_loss"
+      min_delta: 0.0001
+      patience: 10
+      verbose: False
       mode: min
   - name: LearningRateMonitor
-    params:
-      logging_interval: true
-  - name: EarlyStopping
-    params:
+    args:
+      logging_interval: step
       
 
 

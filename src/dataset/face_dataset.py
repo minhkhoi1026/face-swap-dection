@@ -12,7 +12,7 @@ from albumentations.pytorch.transforms import ToTensorV2
 
 from src.utils.loading import load_image_file_paths, generate_label_from_path
 from src.utils.retinex import automatedMSRCR
-from . import DATASET_REGISTRY, default_loader
+from . import DATASET_REGISTRY
 
 
 @DATASET_REGISTRY.register()
@@ -23,6 +23,7 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
         oversampling: bool,
         num_class: int=2,
         img_transform=None,
+        img_normalize=None
     ):
         """
         Constructor for face spoofing training dataset, will be passed to data generator
@@ -36,10 +37,7 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
         self.image_paths = load_image_file_paths(data_path, oversampling)
         self.labels = generate_label_from_path(self.image_paths)
         self.img_transform = img_transform
-        self.img_normalize = Compose([
-            
-            ToTensorV2(),
-        ])
+        self.img_normalize = img_normalize
         self.num_class = num_class
 
     def __len__(self):

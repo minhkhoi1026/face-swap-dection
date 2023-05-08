@@ -7,7 +7,7 @@ from src.model.abstract import MLP, AbstractModel
 from src.loss.focal_loss import FocalLoss
 
 
-class FrameClassifier(AbstractModel):
+class TwoHeadFrameClassifier(AbstractModel):
     def init_model(self):
         extractor_cfg = self.cfg["model"]["extractor"]
         self.img_extractor = EXTRACTOR_REGISTRY.get(extractor_cfg["name"])(
