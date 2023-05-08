@@ -13,6 +13,10 @@ from numba import jit
 
 tf.get_logger().setLevel('ERROR')
 
+from functools import wraps
+import sys
+import io
+
 
 
 def parse_args():
@@ -29,9 +33,25 @@ def parse_args():
 
 
 detector = MTCNN(min_face_size=200)
+
+def capture_output(func):
+    """Wrapper to capture print output."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        old_stdout = sys.stdout
+        new_stdout = io.StringIO()
+        sys.stdout = new_stdout
+        try:
+            return func(*args, **kwargs)
+        finally:
+            sys.stdout = old_stdout
+    return wrapper
+
+w_detect_face = capture_output(detector.detect_faces)
+
 def detect_face_by_mtcnn(image):
     with tf.device('/GPU:0'):
-        faces = detector.detect_faces(image)
+        faces = w_detect_face(image)
     max_face_size = 0
     iH, iW, _ = image.shape
     min_x = iW
@@ -77,12 +97,12 @@ def extract_faces(image, output_path, prefix):
     min_x1, min_y1, max_x1, max_y1 = detect_face_by_mtcnn(img)
     min_x2, min_y2, max_x2, max_y2 = detect_face_by_face_mesh(img)
 
-    min_x = min(min_x1, min_x2)
-    min_y = min(min_y1, min_y2)
-    max_x = max(max_x1, max_x2)
-    max_y = max(max_y1, max_y2)
+    min_x = max(min(min_x1, min_x2), 0)
+    min_y = max(min(min_y1, min_y2), 0)
+    max_x = min(max(max_x1, max_x2), iW)
+    max_y = min(max(max_y1, max_y2), iH)
     if max_x <= min_x or max_y <= min_y:
-        print("no face in {}".format(prefix))
+        # print("no face in {}".format(prefix))
         return
 
     while max_x - min_x > face_size:
@@ -92,6 +112,10 @@ def extract_faces(image, output_path, prefix):
         max_y = math.ceil(max_y / 2)
         iH //= 2
         iW //= 2
+
+    if max_x <= min_x or max_y <= min_y:
+        # print("detect face fail in {}".format(prefix))
+        return
     
     resized_img = cv2.resize(image, (iW,iH))
 
@@ -109,7 +133,9 @@ def extract_frames(data_path, output_path, prefix_images, sampling_ratio):
     reader = cv2.VideoCapture(data_path)
     frame_num = -1
     nframe = int(1 / sampling_ratio) # choose 1 frame per 1/x frames
-    while reader.isOpened():
+
+    total_frames = int(reader.get(cv2.CAP_PROP_FRAME_COUNT))
+    for frame_num in tqdm(range(total_frames), desc = prefix_images):
         success, image = reader.read()
         
         # only process success frame
@@ -117,7 +143,6 @@ def extract_frames(data_path, output_path, prefix_images, sampling_ratio):
             break
         
         # uniform sampling
-        frame_num += 1
         if not frame_num % nframe == 0:
             continue
         
@@ -154,7 +179,10 @@ def extract_all_video(source_path, dest_path, sampling_ratio):
     for path, _, files in os.walk(source_path):
         relative_path = os.path.relpath(path, source_path)
         files.sort()
-        for video in tqdm(files, desc=relative_path):
+
+        print("In folder {}:".format(relative_path))
+        # for video in tqdm(files, desc=relative_path):
+        for video in files:
             # prefix of image file name
             video_name = os.path.splitext(video)[0]
             
