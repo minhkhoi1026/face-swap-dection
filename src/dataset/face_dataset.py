@@ -10,7 +10,7 @@ import cv2
 cv2.setNumThreads(0)
 from albumentations.pytorch.transforms import ToTensorV2
 
-from src.utils.loading import load_image_file_paths, generate_label_from_path
+from src.utils.loading import load_image_label
 from src.utils.retinex import automatedMSRCR
 from . import DATASET_REGISTRY
 
@@ -19,9 +19,10 @@ from . import DATASET_REGISTRY
 class FaceSpoofingDataset(torch.utils.data.Dataset):
     def __init__(
         self,
-        data_path: str,
+        source_path: str,
+        split_file: str,
         oversampling: bool,
-        num_class: int=2,
+        num_classes: int=2,
         img_transform=None,
         img_normalize=None
     ):
@@ -29,16 +30,18 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
         Constructor for face spoofing training dataset, will be passed to data generator
 
         Args:
-            data_path (str): path to dataset directory which contain two sub-directories named fake and real
+            source_path (str): path to dataset directory which contain two sub-directories named fake and real
+            split_file (str): path to split file for train/val/test
             oversampling (str): whether to oversampling the dataset so that number of fake and real samples are equal
-            num_class (int, optional): format of output label (1 is label encoding and 2 is one hot encoding). Defaults to 2.
-            pc_transform (_type_, optional): image augmentation transform. Defaults to None.
+            num_classes (int, optional): format of output label (1 is label encoding and 2 is one hot encoding). Defaults to 2.
+            img_transform (Callable, optional): image augmentation transform. Defaults to None.
+            img_normalize (Callable, optional): image normalizer, execute at the end of transform.
         """
-        self.image_paths = load_image_file_paths(data_path, oversampling)
-        self.labels = generate_label_from_path(self.image_paths)
+        
+        self.image_paths, self.labels = load_image_label(source_path, split_file, oversampling)
         self.img_transform = img_transform
         self.img_normalize = img_normalize
-        self.num_class = num_class
+        self.num_classes = num_classes
 
     def __len__(self):
         return len(self.image_paths)
@@ -74,8 +77,8 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
 
     def collate_fn(self, batch):
         labels = torch.tensor([x["label"] for x in batch])
-        if self.num_class == 2:
-            labels = F.one_hot(labels, self.num_class)
+        if self.num_classes == 2:
+            labels = F.one_hot(labels, self.num_classes)
             
         batch_as_dict = {
             "imgs": torch.stack([x["img"] for x in batch]),

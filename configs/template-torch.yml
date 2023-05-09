@@ -9,10 +9,12 @@ dataset:
   name: FaceSpoofingDataset
   args:
     train:
-      data_path: casia-fasd/sanity
+      source_path: casia-fasd/sanity
+      split_file: train_split.csv
       oversampling: true
     val:
-      data_path: casia-fasd/sanity
+      source_path: casia-fasd/sanity
+      split_file: val_split.csv
       oversampling: true
 data_loader:
   train:
@@ -44,7 +46,7 @@ trainer:
   evaluate_interval: 1
   log_interval: 1
   use_fp16: True
-  debug: False
+  debug: True
 optimizer:
   lr: 0.0001
 lr_scheduler:
@@ -53,7 +55,7 @@ lr_scheduler:
     mode: min
     factor: 0.5
     patience: 5
-    min_lr: 0.0001
+    min_lr: 0.00001
   monitor: val_loss
 callbacks:
   - name: ModelCheckpoint
