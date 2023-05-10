@@ -9,11 +9,11 @@ dataset:
   name: FaceSpoofingDataset
   args:
     train:
-      source_path: casia-fasd/sanity
+      source_path: casia-fasd/train
       split_file: train_split.csv
       oversampling: true
     val:
-      source_path: casia-fasd/sanity
+      source_path: casia-fasd/train
       split_file: val_split.csv
       oversampling: true
 data_loader:
@@ -38,6 +38,10 @@ model:
         version: vit_base_patch16_224
         from_pretrained: True
         freeze: False
+metric:
+  - name: Accuracy
+    args:
+      label_key: "labels"
 trainer:
   num_worker: 8
   start_epoch: 0
@@ -46,7 +50,7 @@ trainer:
   evaluate_interval: 1
   log_interval: 1
   use_fp16: True
-  debug: True
+  debug: False
 optimizer:
   lr: 0.0001
 lr_scheduler:
@@ -56,18 +60,18 @@ lr_scheduler:
     factor: 0.5
     patience: 5
     min_lr: 0.00001
-  monitor: val_loss
+  monitor: val/loss
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "singleVit224-{epoch}-{val_loss:.4f}"
-      monitor: "val_loss"
+      filename: "singleVit224-{epoch}-{val/accuracy:.4f}"
+      monitor: "val/accuracy"
       verbose: True
       save_top_k: 3
       mode: max
   - name: EarlyStopping
     args:
-      monitor: "val_loss"
+      monitor: "val/loss"
       min_delta: 0.0001
       patience: 10
       verbose: False

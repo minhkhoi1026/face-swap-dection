@@ -1,4 +1,5 @@
 import abc
+from src.metrics import METRIC_REGISTRY
 import numpy as np
 import pytorch_lightning as pl
 from pytorch_lightning.utilities.types import (
@@ -22,6 +23,7 @@ class AbstractModel(pl.LightningModule):
         self.train_dataset = None
         self.val_dataset = None
         self.metric_evaluator = None
+        self.metric = None
         self.init_model()
 
     def setup(self, stage):
@@ -46,7 +48,12 @@ class AbstractModel(pl.LightningModule):
                 img_normalize=img_normalize,
                 **self.cfg["dataset"]["args"]["val"],
             )
-
+            
+            self.metric = [
+                METRIC_REGISTRY.get(mcfg["name"])(**mcfg["args"])
+                if mcfg["args"] else METRIC_REGISTRY.get(mcfg["name"])()
+                for mcfg in self.cfg["metric"]
+            ]
     @abc.abstractmethod
     def init_model(self):
         """
@@ -77,8 +84,8 @@ class AbstractModel(pl.LightningModule):
         # 2. Calculate loss
         loss = self.compute_loss(forwarded_batch=forwarded_batch, input_batch=batch)
         # 3. Update monitor
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
-        return {"loss": loss}
+        self.log("train/loss", loss)
+        return {"loss": loss, "log": {"train_loss": loss}}
 
     def validation_step(self, batch, batch_idx):
         # 1. Get embeddings from model
@@ -86,14 +93,9 @@ class AbstractModel(pl.LightningModule):
         # 2. Calculate loss
         loss = self.compute_loss(forwarded_batch=forwarded_batch, input_batch=batch)
         # 3. Update metric for each batch
-        self.log("val_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
-        # self.metric_evaluator.append(
-        #     g_emb=forwarded_batch["pc_embedding_feats"].float().clone().detach(),
-        #     q_emb=forwarded_batch["query_embedding_feats"].float().clone().detach(),
-        #     query_ids=batch["query_ids"],
-        #     gallery_ids=batch["point_cloud_ids"],
-        #     target_ids=batch["point_cloud_ids"],
-        # )
+        self.log("val/loss", loss)
+        for m in self.metric:
+            m.update(forwarded_batch, batch)
 
         return {"loss": loss}
 
@@ -105,15 +107,31 @@ class AbstractModel(pl.LightningModule):
         Args:
             outputs: output of validation step
         """
-        # TODO: add EER evaluate metric
-        # self.log_dict(
-        #     self.metric_evaluator.evaluate(),
-        #     prog_bar=True,
-        #     on_step=False,
-        #     on_epoch=True,
-        # )
-        # self.metric_evaluator.reset()
-        pass
+        # 1. Calculate average validation loss
+        loss = torch.mean(torch.stack([o["loss"] for o in outputs], dim=0))
+        # 2. Calculate metric value
+        out = {"val/loss": loss}
+        for m in self.metric:
+            # 3. Update metric for each batch
+            metric_dict = m.value()
+            out.update(metric_dict)
+            for k in metric_dict.keys():
+                self.log(f"val/{k}", out[k])
+
+        # Log string
+        log_string = ""
+        for metric, score in out.items():
+            if isinstance(score, (int, float)):
+                log_string += metric + ": " + f"{score:.5f}" + " | "
+        log_string += "\n"
+        print(log_string)
+
+        # 4. Reset metric
+        for m in self.metric:
+            m.reset()
+
+        self.log("val/loss", loss.cpu().numpy().item())
+        return {**out, "log": out}
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         train_loader = DataLoader(
