@@ -1,4 +1,4 @@
-"""  """
+""" https://github.com/1adrianb/face-alignment """
 import os
 import cv2
 from tqdm import tqdm
@@ -13,21 +13,24 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", help="path of source data", required=True)
     parser.add_argument("--dest", help="path of destination frame store", required=True)
-    parser.add_argument("--thickness", help="percentage of thickness of the line and width of image", default=10)
-    parser.add_argument("--blur", help="percentage of kernel to blur and width of image", default=10)
+    parser.add_argument("--thickness", help="percentage of thickness of the line and width of image", type=int, default=10)
+    parser.add_argument("--blur", help="percentage of kernel to blur and width of image", type=int, default=10)
+    parser.add_argument("--crop", help="crop the image (default: False)", const=True, default=False)
     
     return parser.parse_args()
 
 
 @jit
-def extract_landmark(image_path, output_path, prefix, thickness_percentage, blur_percentage):
+def extract_landmark(image_path, output_path, prefix, thickness_percentage, blur_percentage, is_crop):
     fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
     image = cv2.imread(image_path)
     preds = fa.get_landmarks(image)
     if preds == None or len(preds) == 0:
+        print(image_path+ "no have face")
         return
 
     _, iW, _ = image.shape
+
     thickness = int(iW * thickness_percentage / 100)
     blur = int(iW * blur_percentage / 100)
 
@@ -60,14 +63,25 @@ def extract_landmark(image_path, output_path, prefix, thickness_percentage, blur
 
     scaled_image = blurred_img / 255
 
-    Schur_product_image = image * scaled_image
+    result_image = image * scaled_image
+
+    if is_crop:
+        non_zero_pixels = np.nonzero(result_image)
+
+        min_y = np.min(non_zero_pixels[0])
+        max_y = np.max(non_zero_pixels[0])
+        min_x = np.min(non_zero_pixels[1])
+        max_x = np.max(non_zero_pixels[1])
+
+        result_image = result_image[min_y:max_y+1, min_x:max_x+1]
+
 
     os.makedirs(output_path, exist_ok = True)
-    cv2.imwrite("{}_landmark.png".format(os.path.join(output_path, prefix)), Schur_product_image)
+    cv2.imwrite("{}_landmark.png".format(os.path.join(output_path, prefix)), result_image)
 
 
 @jit
-def extract_all_image(source_path, dest_path, thickness, blur):
+def extract_all_image(source_path, dest_path, thickness, blur, crop):
     for path, _, files in os.walk(source_path):
         relative_path = os.path.relpath(path, source_path)
         files.sort()
@@ -77,12 +91,13 @@ def extract_all_image(source_path, dest_path, thickness, blur):
 
             output_path = os.path.join(dest_path, relative_path)
             
-            extract_landmark(input_path, output_path, image_name, thickness, blur)
+            extract_landmark(input_path, output_path, image_name, thickness, blur, crop)
 
 args = parse_args()
 
 source_path = args.source
 dest_path = args.dest
-thickness = int(args.thickness)
-blur = int(args.blur)
-extract_all_image(source_path, dest_path, thickness, blur)
+thickness = args.thickness
+blur = args.blur
+crop = args.crop
+extract_all_image(source_path, dest_path, thickness, blur, crop)

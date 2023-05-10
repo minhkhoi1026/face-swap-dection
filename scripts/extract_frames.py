@@ -24,10 +24,10 @@ def parse_args():
     parser.add_argument("--source", help="path of source data", required=True)
     parser.add_argument("--dest", help="path of destination frame store", required=True)
     parser.add_argument("--sampling-ratio", help="specify a ratio x for frame sampling (0 < x <= 1)", required=True)
-    parser.add_argument("--threshold", help="specify a minimum confidence threshold c for face detection (0 < c <= 1)", default=0.9)
+    parser.add_argument("--threshold", help="specify a minimum confidence threshold c for face detection (0 < c <= 1)", type=float, default=0.9)
     parser.add_argument("--extract-type", help="choices in {frame, face}", choices=["frame", "face"], default="frame")
     parser.add_argument("--dataset-type", help="choices in {casia, normal}", choices=["casia", "normal"], default="normal")
-    parser.add_argument("--face-size", help="maximun of face width, default = 200", default=200)
+    parser.add_argument("--face-size", help="maximun of face width, default = 200", type=int, default=200)
     
     return parser.parse_args()
 
@@ -123,7 +123,7 @@ def extract_faces(image, output_path, prefix):
     if extract_type == "frame":
         cv2.imwrite(os.path.join(output_path, '{}.png'.format(prefix)), resized_img)
     else:
-        crop_face = resized_img[min_y:max_y, min_x:max_x]
+        crop_face = resized_img[min_y:max_y+1, min_x:max_x+1]
         cv2.imwrite(os.path.join(output_path, '{}.png'.format(prefix)), crop_face)
 
 @jit
@@ -198,10 +198,10 @@ args = parse_args()
 source_path = args.source
 dest_path = args.dest
 confidence_threshold = args.threshold
-sampling_ratio = float(args.sampling_ratio)
+sampling_ratio = args.sampling_ratio
 dataset_type = args.dataset_type
 extract_type = args.extract_type
-face_size = int(args.face_size)
+face_size = args.face_size
 if dataset_type == "casia":
     extract_all_individual(source_path, dest_path, sampling_ratio)
 else:
