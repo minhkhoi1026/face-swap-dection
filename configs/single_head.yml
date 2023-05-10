@@ -1,7 +1,7 @@
 global:
   username: minhkhoi1026
   project_name: hcmus-fsd
-  run_name: single-vit224
+  run_name: single-vit224-newdataset
   save_dir: logs
   SEED: 47
   resume: null
@@ -9,13 +9,13 @@ dataset:
   name: FaceSpoofingDataset
   args:
     train:
-      source_path: casia-fasd/train
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop
       split_file: train_split.csv
       oversampling: true
     val:
-      source_path: casia-fasd/train
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop
       split_file: val_split.csv
-      oversampling: true
+      oversampling: false
 data_loader:
   train:
     args:
