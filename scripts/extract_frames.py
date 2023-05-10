@@ -201,7 +201,7 @@ confidence_threshold = args.threshold
 sampling_ratio = float(args.sampling_ratio)
 dataset_type = args.dataset_type
 extract_type = args.extract_type
-face_size = args.face_size
+face_size = int(args.face_size)
 if dataset_type == "casia":
     extract_all_individual(source_path, dest_path, sampling_ratio)
 else:

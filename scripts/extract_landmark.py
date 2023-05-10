@@ -83,6 +83,6 @@ args = parse_args()
 
 source_path = args.source
 dest_path = args.dest
-thickness = args.thickness
-blur = args.blur
+thickness = int(args.thickness)
+blur = int(args.blur)
 extract_all_image(source_path, dest_path, thickness, blur)
