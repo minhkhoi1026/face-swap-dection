@@ -3,24 +3,22 @@ import torch
 from torch import nn
 from . import METRIC_REGISTRY
 import numpy as np
-
+from sklearn.metrics import roc_curve
 
 @METRIC_REGISTRY.register()
-class Accuracy:
+class BinaryEqualErrorRate:
     """
-    Accuracy Score
+    Equal Error Rate for Binary Classification
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.threshold = kwargs.get('threshold') or 0.5
         self.reset()
 
     def update(self, preds, targets):
         """
         Perform calculation based on prediction and targets
         """
-        preds = preds >= self.threshold
         preds = preds.detach().cpu().float()
         targets = targets.detach().cpu().float()
         self.preds += preds.numpy().tolist()
@@ -31,5 +29,7 @@ class Accuracy:
         self.preds = []
 
     def value(self):
-        score = np.mean(np.array(self.targets) == np.array(self.preds))
-        return {f"accuracy": score}
+        fpr, tpr, threshold = roc_curve(self.targets, self.preds, pos_label=1)
+        fnr = 1 - tpr
+        id = np.nanargmin(np.absolute((fnr - fpr)))
+        return {f"eer": fpr[id], "threshold": threshold[id]}

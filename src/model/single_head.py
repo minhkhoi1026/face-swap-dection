@@ -29,3 +29,12 @@ class SingleHeadFrameClassifier(AbstractModel):
     def compute_loss(self, forwarded_batch, input_batch):
         logits, labels = forwarded_batch["logits"], input_batch["labels"]
         return self.loss(logits, labels)
+    
+    def extract_target_from_batch(self, batch):
+        return batch["labels"].argmax(dim=1)
+    
+    def extract_pred_from_forwarded_batch(self, forwarded_batch):
+        # change to probability since raw logits are passed
+        preds = nn.Softmax(dim=1)(forwarded_batch["logits"])
+        preds = preds[:, 1]  
+        return preds

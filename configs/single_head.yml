@@ -4,7 +4,7 @@ global:
   run_name: single-vit224-newdataset
   save_dir: logs
   SEED: 47
-  resume: null
+  resume: logs/hcmus-fsd/a6f0sj4g/checkpoints/singleVit224-epoch=10-val/accuracy=0.9991.ckpt
 dataset:
   name: FaceSpoofingDataset
   args:
@@ -41,7 +41,8 @@ model:
 metric:
   - name: Accuracy
     args:
-      label_key: "labels"
+  - name: BinaryEqualErrorRate
+    args:
 trainer:
   num_worker: 8
   start_epoch: 0
