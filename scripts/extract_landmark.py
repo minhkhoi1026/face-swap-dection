@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument("--dest", help="path of destination frame store", required=True)
     parser.add_argument("--thickness", help="percentage of thickness of the line and width of image", type=int, default=10)
     parser.add_argument("--blur", help="percentage of kernel to blur and width of image", type=int, default=10)
-    parser.add_argument("--crop", help="crop the image (default: False)", const=True, default=False)
+    parser.add_argument("--crop", help="crop the image?", action='store_true')
     
     return parser.parse_args()
 
@@ -29,10 +29,11 @@ def extract_landmark(image_path, output_path, prefix, thickness_percentage, blur
         print(image_path+ "no have face")
         return
 
-    _, iW, _ = image.shape
+    listY = [int(y) for x,y in preds[0]]
+    face_size = max(listY) - min(listY)
 
-    thickness = int(iW * thickness_percentage / 100)
-    blur = int(iW * blur_percentage / 100)
+    thickness = int(face_size * thickness_percentage / 100)
+    blur = int(face_size * blur_percentage / 100)
 
     pred_types = {'face': slice(0, 17),
                 'eyebrow1': slice(17, 22),

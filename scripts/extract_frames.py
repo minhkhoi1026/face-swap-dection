@@ -54,8 +54,8 @@ def detect_face_by_mtcnn(image):
         faces = w_detect_face(image)
     max_face_size = 0
     iH, iW, _ = image.shape
-    min_x = iW
-    min_y = iH
+    min_x = iW-1
+    min_y = iH-1
     max_x = 0
     max_y = 0
     for face in faces:
