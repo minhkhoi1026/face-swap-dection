@@ -92,7 +92,7 @@ class AbstractModel(pl.LightningModule):
         # 2. Calculate loss
         loss = self.compute_loss(forwarded_batch=forwarded_batch, input_batch=batch)
         # 3. Update monitor
-        self.log("train/loss", loss)
+        self.log("train/loss", loss, on_epoch=True, prog_bar=True)
         return {"loss": loss, "log": {"train_loss": loss}}
 
     def validation_step(self, batch, batch_idx):
@@ -101,7 +101,7 @@ class AbstractModel(pl.LightningModule):
         # 2. Calculate loss
         loss = self.compute_loss(forwarded_batch=forwarded_batch, input_batch=batch)
         # 3. Update metric for each batch
-        self.log("val/loss", loss)
+        self.log("val/loss", loss, on_epoch=True, prog_bar=True)
         for m in self.metric:
             targets = self.extract_target_from_batch(batch)
             preds = self.extract_pred_from_forwarded_batch(forwarded_batch)
@@ -117,10 +117,8 @@ class AbstractModel(pl.LightningModule):
         Args:
             outputs: output of validation step
         """
-        # 1. Calculate average validation loss
-        loss = torch.mean(torch.stack([o["loss"] for o in outputs], dim=0))
-        # 2. Calculate metric value
-        out = {"val/loss": loss}
+        # 1. Calculate metric value
+        out = {}
         for m in self.metric:
             # 3. Update metric for each batch
             metric_dict = m.value()
@@ -140,48 +138,6 @@ class AbstractModel(pl.LightningModule):
         for m in self.metric:
             m.reset()
 
-        self.log("val/loss", loss.cpu().numpy().item())
-        return {**out, "log": out}
-    
-    def test_step(self, batch, batch_idx):
-        # 1. Get embeddings from model
-        forwarded_batch = self.forward(batch)
-        # 2. Calculate loss
-        loss = self.compute_loss(forwarded_batch=forwarded_batch, input_batch=batch)
-        # 3. Update metric for each batch
-        self.log("test/loss", loss)
-        for m in self.metric:
-            targets = self.extract_target_from_batch(batch)
-            preds = self.extract_pred_from_forwarded_batch(forwarded_batch)
-            m.update(preds, targets)
-
-        return {"loss": loss}
-
-    def test_epoch_end(self, outputs) -> None:
-        # 1. Calculate average validation loss
-        loss = torch.mean(torch.stack([o["loss"] for o in outputs], dim=0))
-        # 2. Calculate metric value
-        out = {"test/loss": loss}
-        for m in self.metric:
-            # 3. Update metric for each batch
-            metric_dict = m.value()
-            out.update(metric_dict)
-            for k in metric_dict.keys():
-                self.log(f"test/{k}", out[k])
-
-        # Log string
-        log_string = ""
-        for metric, score in out.items():
-            if isinstance(score, (int, float)):
-                log_string += metric + ": " + f"{score:.5f}" + " | "
-        log_string += "\n"
-        print(log_string)
-
-        # 4. Reset metric
-        for m in self.metric:
-            m.reset()
-
-        self.log("test/loss", loss.cpu().numpy().item())
         return {**out, "log": out}
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:

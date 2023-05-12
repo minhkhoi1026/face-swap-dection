@@ -4,29 +4,29 @@ global:
   run_name: single-vit224-newdataset
   save_dir: logs
   SEED: 47
-  resume: logs/hcmus-fsd/a6f0sj4g/checkpoints/singleVit224-epoch=10-val/accuracy=0.9991.ckpt
+  resume: null
 dataset:
   name: FaceSpoofingDataset
   args:
     train:
       source_path: fsd-deepfakerapp/deepfaker_app/face_crop
       split_file: train_split.csv
-      oversampling: true
+      oversampling: True
     val:
       source_path: fsd-deepfakerapp/deepfaker_app/face_crop
       split_file: val_split.csv
-      oversampling: false
+      oversampling: False
 data_loader:
   train:
     args:
       batch_size: 64
       num_workers: 8
-      shuffle: true
+      shuffle: True
   val:
     args:
       batch_size: 64
       num_workers: 8
-      shuffle: false
+      shuffle: False
 model:
   name: SingleHeadFrameClassifier
   input_size: 224
@@ -41,15 +41,13 @@ model:
 metric:
   - name: Accuracy
     args:
-  - name: BinaryEqualErrorRate
-    args:
 trainer:
   num_worker: 8
   start_epoch: 0
   start_epoch: 0
   num_epochs: 100
   evaluate_interval: 1
-  log_interval: 1
+  log_interval: 50
   use_fp16: True
   debug: False
 optimizer:
@@ -65,11 +63,13 @@ lr_scheduler:
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "singleVit224-{epoch}-{val/accuracy:.4f}"
+      filename: "singleVit224-epoch={epoch}-val_acc={val/accuracy:.4f}"
       monitor: "val/accuracy"
       verbose: True
       save_top_k: 3
       mode: max
+      auto_insert_metric_name: False #https://github.com/Lightning-AI/lightning/issues/4012
+      
   - name: EarlyStopping
     args:
       monitor: "val/loss"
