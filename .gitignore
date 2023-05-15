@@ -5,6 +5,7 @@ fsd-deepfakerapp/
 data/
 weights/
 logs/
+lightning_logs/
 src-old/
 
 # slurm

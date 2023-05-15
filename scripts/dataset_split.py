@@ -20,9 +20,12 @@ def split(source_path, train_size):
                 rows.append((file_path, label))
                   
     df = pd.DataFrame(rows, columns=["filepath", "label"])
+    # shuffle to avoid batch contain all 0-labeled or 1-labeled sample
+    df = df.sample(frac=1).reset_index(drop=True)
 
     train, val = train_test_split(df, train_size=train_size)
     
+    df.to_csv(os.path.join(source_path, "all.csv"), index=None)
     train.to_csv(os.path.join(source_path, "train_split.csv"), index=None)
     val.to_csv(os.path.join(source_path, "val_split.csv"), index=None)
 

@@ -16,6 +16,10 @@ dataset:
       source_path: fsd-deepfakerapp/deepfaker_app/face_crop
       split_file: val_split.csv
       oversampling: False
+    test:
+      source_path: casia-fasd/test
+      split_file: all.csv
+      oversampling: False
 data_loader:
   train:
     args:
@@ -23,6 +27,11 @@ data_loader:
       num_workers: 8
       shuffle: True
   val:
+    args:
+      batch_size: 64
+      num_workers: 8
+      shuffle: False
+  test:
     args:
       batch_size: 64
       num_workers: 8

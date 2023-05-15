@@ -30,7 +30,7 @@ def download_dataset(dataset_name):
     api = KaggleApi()
     api.authenticate()
     os.makedirs(dataset_name, exist_ok=True)
-    api.dataset_download_files(url, path=dataset_name, unzip=True)
+    api.dataset_download_files(url, path=dataset_name, unzip=True, force=True)
 
 if __name__ == "__main__":
     args = parse_args()

@@ -20,13 +20,14 @@ class AbstractModel(pl.LightningModule):
         self.cfg = cfg
         self.train_dataset = None
         self.val_dataset = None
+        self.test_dataset = None
         self.train_metric = None
         self.val_metric = None
         self.test_metric = None
         self.init_model()
 
     def setup(self, stage):
-        if stage in ["fit", "validate", "test"]:
+        if stage in ["fit", "validate"]:
             # generate train and validation pytorch dataset
             # image transform for data augmentation
             image_size = self.cfg["model"]["input_size"]
@@ -53,10 +54,29 @@ class AbstractModel(pl.LightningModule):
                 if mcfg["args"] else METRIC_REGISTRY.get(mcfg["name"])()
                 for mcfg in self.cfg["metric"]
             ]
-            metrics = MetricCollection({metric.name: metric for metric in metrics})
-            self.train_metric = metrics.clone(prefix="train/")
-            self.val_metric = metrics.clone(prefix="val/")
-            self.test_metric = metrics.clone(prefix="test/")
+        elif stage == "test":
+            # generate train and validation pytorch dataset
+            # image transform for data augmentation
+            image_size = self.cfg["model"]["input_size"]
+            image_transform_test = TRANSFORM_REGISTRY.get('test_classify_tf')(
+                img_size=image_size)
+            img_normalize = TRANSFORM_REGISTRY.get("img_normalize")()
+
+            self.test_dataset = DATASET_REGISTRY.get(self.cfg["dataset"]["name"])(
+                img_transform=image_transform_test,
+                img_normalize=img_normalize,
+                **self.cfg["dataset"]["args"]["test"],
+            )
+            
+        metrics = [
+            METRIC_REGISTRY.get(mcfg["name"])(**mcfg["args"])
+            if mcfg["args"] else METRIC_REGISTRY.get(mcfg["name"])()
+            for mcfg in self.cfg["metric"]
+        ]
+        metrics = MetricCollection({metric.name: metric for metric in metrics})
+        self.train_metric = metrics.clone(prefix="train/")
+        self.val_metric = metrics.clone(prefix="val/")
+        self.test_metric = metrics.clone(prefix="test/")
     @abc.abstractmethod
     def init_model(self):
         """
@@ -128,6 +148,21 @@ class AbstractModel(pl.LightningModule):
             outputs: output of validation step
         """
         pass
+    
+    def test_step(self, batch, batch_idx):
+        # 1. Get embeddings from model
+        forwarded_batch = self.forward(batch)
+        # 2. Calculate loss
+        loss = self.compute_loss(forwarded_batch=forwarded_batch, input_batch=batch)
+        # 3. Update metric for each batch
+        self.log("test/loss", loss, on_step=True, on_epoch=True)
+        
+        targets = self.extract_target_from_batch(batch)
+        preds = self.extract_pred_from_forwarded_batch(forwarded_batch)
+        output = self.test_metric(preds, targets)
+        self.log_dict(output, on_step=True, on_epoch=True)
+
+        return {"loss": detach(loss)}
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         train_loader = DataLoader(
@@ -144,6 +179,14 @@ class AbstractModel(pl.LightningModule):
             **self.cfg["data_loader"]["val"]["args"],
         )
         return val_loader
+    
+    def test_dataloader(self) -> EVAL_DATALOADERS:
+        test_loader = DataLoader(
+            dataset=self.test_dataset,
+            collate_fn=self.test_dataset.collate_fn,
+            **self.cfg["data_loader"]["test"]["args"],
+        )
+        return test_loader
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
