@@ -44,9 +44,10 @@ def train(config):
         num_sanity_val_steps=-1,  # Sanity full validation required for visualization callbacks
         deterministic=False,
         auto_lr_find=True,
+        resume_from_checkpoint=config["global"]["resume"]
     )
 
-    trainer.fit(model, ckpt_path=config["global"]["resume"])
+    trainer.fit(model)
 
 
 if __name__ == "__main__":

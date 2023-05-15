@@ -9,8 +9,7 @@ from pytorch_lightning.utilities.types import (
 from torch import nn
 from torch.utils.data import DataLoader
 import torch
-from torchvision import transforms
-import random
+from torchmetrics import MetricCollection
 from src.augmentation import TRANSFORM_REGISTRY
 from src.dataset import DATASET_REGISTRY
 
@@ -22,8 +21,9 @@ class AbstractModel(pl.LightningModule):
         self.cfg = cfg
         self.train_dataset = None
         self.val_dataset = None
-        self.metric_evaluator = None
-        self.metric = None
+        self.train_metric = None
+        self.val_metric = None
+        self.test_metric = None
         self.init_model()
 
     def setup(self, stage):
@@ -49,11 +49,15 @@ class AbstractModel(pl.LightningModule):
                 **self.cfg["dataset"]["args"]["val"],
             )
             
-            self.metric = [
+            metrics = [
                 METRIC_REGISTRY.get(mcfg["name"])(**mcfg["args"])
                 if mcfg["args"] else METRIC_REGISTRY.get(mcfg["name"])()
                 for mcfg in self.cfg["metric"]
             ]
+            metrics = MetricCollection({metric.name: metric for metric in metrics})
+            self.train_metric = metrics.clone(prefix="train/")
+            self.val_metric = metrics.clone(prefix="val/")
+            self.test_metric = metrics.clone(prefix="test/")
     @abc.abstractmethod
     def init_model(self):
         """
@@ -91,8 +95,14 @@ class AbstractModel(pl.LightningModule):
         forwarded_batch = self.forward(batch)
         # 2. Calculate loss
         loss = self.compute_loss(forwarded_batch=forwarded_batch, input_batch=batch)
-        # 3. Update monitor
-        self.log("train/loss", loss, on_epoch=True, prog_bar=True)
+        # 3. Update metrics
+        self.log("train/loss", loss, on_step=True, on_epoch=True)
+        
+        targets = self.extract_target_from_batch(batch)
+        preds = self.extract_pred_from_forwarded_batch(forwarded_batch)
+        output = self.train_metric(preds, targets)
+        self.log_dict(output, on_step=True, on_epoch=True)
+        
         return {"loss": loss, "log": {"train_loss": loss}}
 
     def validation_step(self, batch, batch_idx):
@@ -101,11 +111,12 @@ class AbstractModel(pl.LightningModule):
         # 2. Calculate loss
         loss = self.compute_loss(forwarded_batch=forwarded_batch, input_batch=batch)
         # 3. Update metric for each batch
-        self.log("val/loss", loss, on_epoch=True, prog_bar=True)
-        for m in self.metric:
-            targets = self.extract_target_from_batch(batch)
-            preds = self.extract_pred_from_forwarded_batch(forwarded_batch)
-            m.update(preds, targets)
+        self.log("val/loss", loss, on_step=True, on_epoch=True)
+        
+        targets = self.extract_target_from_batch(batch)
+        preds = self.extract_pred_from_forwarded_batch(forwarded_batch)
+        output = self.val_metric(preds, targets)
+        self.log_dict(output, on_step=True, on_epoch=True)
 
         return {"loss": loss}
 
@@ -117,28 +128,7 @@ class AbstractModel(pl.LightningModule):
         Args:
             outputs: output of validation step
         """
-        # 1. Calculate metric value
-        out = {}
-        for m in self.metric:
-            # 3. Update metric for each batch
-            metric_dict = m.value()
-            out.update(metric_dict)
-            for k in metric_dict.keys():
-                self.log(f"val/{k}", out[k])
-
-        # Log string
-        log_string = ""
-        for metric, score in out.items():
-            if isinstance(score, (int, float)):
-                log_string += metric + ": " + f"{score:.5f}" + " | "
-        log_string += "\n"
-        print(log_string)
-
-        # 4. Reset metric
-        for m in self.metric:
-            m.reset()
-
-        return {**out, "log": out}
+        pass
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         train_loader = DataLoader(

@@ -5,31 +5,32 @@ from . import METRIC_REGISTRY
 import numpy as np
 from sklearn.metrics import roc_curve
 
+import torch
+from . import METRIC_REGISTRY
+
+
+from torchmetrics import Metric
+
 @METRIC_REGISTRY.register()
-class BinaryEqualErrorRate:
+class BinaryEqualErrorRate(Metric):
     """
     Equal Error Rate for Binary Classification
     """
+    def __init__(self):
+        super().__init__()
+        self.name = "eer"
+        self.add_state("preds", default=[], dist_reduce_fx=None)
+        self.add_state("targets", default=[], dist_reduce_fx=None)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.reset()
+    def update(self, preds: torch.Tensor, targets: torch.Tensor):
+        self.preds.append(preds)
+        self.targets.append(targets)
 
-    def update(self, preds, targets):
-        """
-        Perform calculation based on prediction and targets
-        """
-        preds = preds.detach().cpu().float()
-        targets = targets.detach().cpu().float()
-        self.preds += preds.numpy().tolist()
-        self.targets += targets.numpy().tolist()
-
-    def reset(self):
-        self.targets = []
-        self.preds = []
-
-    def value(self):
-        fpr, tpr, threshold = roc_curve(self.targets, self.preds, pos_label=1)
+    def compute(self):
+        preds = torch.cat(self.preds).detach().cpu().numpy()
+        targets = torch.cat(self.targets).detach().cpu().numpy()
+        fpr, tpr, threshold = roc_curve(targets, preds, pos_label=1)
         fnr = 1 - tpr
         id = np.nanargmin(np.absolute((fnr - fpr)))
-        return {f"eer": fpr[id], "threshold": threshold[id]}
+        
+        return fpr[id]

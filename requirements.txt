@@ -2,7 +2,7 @@ python-dotenv
 kaggle
 tqdm
 opencv-python
-pytorch-lightning==1.6.0
+pytorch-lightning==1.5.10
 mtcnn
 tabulate
 wandb
