@@ -12,8 +12,7 @@ import torch
 from torchmetrics import MetricCollection
 from src.augmentation import TRANSFORM_REGISTRY
 from src.dataset import DATASET_REGISTRY
-
-from src.extractor.base_extractor import ExtractorNetwork
+from src.utils.device import detach
 
 class AbstractModel(pl.LightningModule):
     def __init__(self, cfg):
@@ -103,7 +102,7 @@ class AbstractModel(pl.LightningModule):
         output = self.train_metric(preds, targets)
         self.log_dict(output, on_step=True, on_epoch=True)
         
-        return {"loss": loss, "log": {"train_loss": loss}}
+        return {"loss": loss}
 
     def validation_step(self, batch, batch_idx):
         # 1. Get embeddings from model
@@ -118,7 +117,7 @@ class AbstractModel(pl.LightningModule):
         output = self.val_metric(preds, targets)
         self.log_dict(output, on_step=True, on_epoch=True)
 
-        return {"loss": loss}
+        return {"loss": detach(loss)}
 
     def validation_epoch_end(self, outputs) -> None:
         """
