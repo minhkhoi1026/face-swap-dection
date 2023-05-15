@@ -1,6 +1,6 @@
-import tensorflow as tf
+from src.utils.registry import Registry
 
-from src.metrics.eer import EqualErrorRate
+METRIC_REGISTRY = Registry("METRIC")
 
-# Register the new metric with TensorFlow
-tf.keras.utils.get_custom_objects()['equal_error_rate'] = EqualErrorRate
+from .accuracy import Accuracy
+from .eer import BinaryEqualErrorRate
