@@ -24,9 +24,9 @@ import io
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", help="path of source data", required=True)
-    parser.add_argument("--dest", help="path of destination frame store", required=True)
+    parser.add_argument("--dest", help="path of destination image store", required=True)
     parser.add_argument("--sampling-ratio", help="specify a ratio x for frame sampling (0 < x <= 1)", type=float, required=True)
-    parser.add_argument("--extract-type", help="choices in {all, frame, face}", choices=["all", "face", "landmark"], default="all")
+    parser.add_argument("--extract-type", help="choices in {all, frame, face}, default=all", choices=["all", "face", "landmark"], default="all")
     
     return parser.parse_args()
 

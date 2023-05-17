@@ -43,6 +43,61 @@ videos
 	    └── fake
 ```
 
+### Extract data
+cmd:
+```
+$ python scripts/extract_all.py  --source <> --dest <> --sampling-ratio <> --extract-type <>
+```
+params:
+- source: path of source data
+- dest: path of destination image store
+- sampling-ratio: specify a ratio x for frame sampling (0 < x <= 1)
+- extract-type: choices in {all, frame, face}, default=all
+
+For example:
+```
+$ python scripts/extract_all.py  --source ./data/ --dest ./data_extract/ --sampling-ratio 0.5 --extract-type all
+```
+If file structer of source folder '''./data/''' is as such:
+```
+    data
+	    └── real
+	    	    └── real1.mp4
+					.
+					.
+	    └── fake
+	    	    └── fake1.jpg
+					.
+					.
+```
+Then file structer of source folder '''./data_extract/''' is as such:
+```
+    data
+		└── face_crop
+					└── real
+							└── real1_0000.png
+								real1_0005.png
+								.
+								.
+					└── fake
+							└── fake1_0000.png
+								fake1_0005.png
+								.
+								.
+		└── landmark
+					└── real
+							└── real1_0000_landmark.png
+								real1_0005_landmark.png
+								.
+								.
+					└── fake
+							└── fake1_0000_landmark.png
+								fake1_0005_landmark.png
+								.
+								.
+```
+
+
 ## CNN Backbone
 
 As shown in the image below, a CNN is needed in the MSR and RGB stream. I have decided to proceed with MobileNetV3 taken from [https://github.com/xiaochus/MobileNetV3](https://github.com/xiaochus/MobileNetV3) due to its lightweight architecture.
