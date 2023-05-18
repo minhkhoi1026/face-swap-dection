@@ -4,20 +4,20 @@ global:
   run_name: single-vit224-newdataset
   save_dir: logs
   SEED: 47
-  resume: logs/hcmus-fsd/mevtgp9p/checkpoints/singleVit224-epoch=8-val_acc=0.9996.ckpt
+  resume: null
 dataset:
   name: FaceSpoofingDataset
   args:
     train:
-      source_path: fsd-deepfakerapp/deepfaker_app/face_crop
-      split_file: train_split.csv
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/train
+      split_file: all.csv
       oversampling: True
     val:
-      source_path: fsd-deepfakerapp/deepfaker_app/face_crop
-      split_file: val_split.csv
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/test
+      split_file: all.csv
       oversampling: False
     test:
-      source_path: casia-fasd/test
+      source_path: fsd-deepfakerapp/fsd-dataset/faceforensics-sample/face_crop
       split_file: all.csv
       oversampling: False
 data_loader:
