@@ -1,68 +1,35 @@
-import warnings
-warnings.filterwarnings('ignore')
+"""
+Script to test the model
+Will use the same config yaml file as train, just need to adjust these below fields:
+- dataset.args.test
+- data_loader.test
+- global.resume: checkpoint path
+- metric [optional]: change it whether you want different metrics with training stage
+"""
 
-import argparse
-from cv2 import imshow
-from cv2 import CascadeClassifier
-from cv2 import rectangle
-import cv2
-import numpy as np
+import torch
+from src.utils.opt import Opts
 
-from src.utils.retinex import automatedMSRCR
-from src.models.attention import attention_model
+from src.model import MODEL_REGISTRY
+import pytorch_lightning as pl
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--weight", help="path to model's pretrained weight", required=True)
-    parser.add_argument("--cascade-classifier", help="path to cascade classifier", required=True)
-    return parser.parse_args()
 
-args = parse_args()
-weigth_path = args.weight
-cascade_classifier_path = args.cascade_classifier
-dim = 128
-cnn_model = "Xception"
+def check(cfg):
+    model = MODEL_REGISTRY.get(cfg.model["name"])(cfg)
+    model = model.load_from_checkpoint(cfg['global']['resume'],
+                                       cfg=cfg,
+                                       strict=True)
+    trainer = pl.Trainer(
+        gpus=-1
+        if torch.cuda.device_count() else None,  # Use all gpus available
+        strategy="ddp" if torch.cuda.device_count() > 1 else None,
+        sync_batchnorm=True if torch.cuda.device_count() > 1 else False,
+    )
+    trainer.test(model)
+    del trainer
+    del cfg
+    del model
 
-cap = cv2.VideoCapture(0)
-
-classifier = CascadeClassifier(cascade_classifier_path)
-model = attention_model(1, backbone=cnn_model, shape=(dim, dim, 3))
-model.load_weights(weigth_path)
-
-fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640,480))
-
-while True:
-    ret, frame = cap.read()
-    bboxes = classifier.detectMultiScale(frame)
-
-    for box in bboxes:
-        x, y, width, height = box
-        x2, y2 = int(x + 1.0*width), int(y + 1.2*height)
-        x, y = int(x-0.0*width), int(y-0.2*height)
-
-        img = frame[y:y2, x:x2]
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = cv2.resize(img, (dim, dim))
-
-        new_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-        new_img = np.expand_dims(new_img, -1)
-        new_img = automatedMSRCR(new_img, [10, 20, 30])
-        new_img = cv2.cvtColor(new_img[:, :, 0], cv2.COLOR_GRAY2RGB)
-
-        preds = model.predict([np.expand_dims(img / 255.0, 0), np.expand_dims(new_img / 255.0, 0)])
-
-        if preds[0][0] > 0.90:
-            rectangle(frame, (x, y), (x2, y2), (0,0,255), 1)
-        else:
-            rectangle(frame, (x, y), (x2, y2), (0,255,0), 1)
-        out.write(frame)
-    imshow('face detection', frame)
-
-    if cv2.waitKey(25) & 0xFF == ord('q'):
-        break
-
-cap.release()
-out.release()
-cv2.destroyAllWindows()
-
+if __name__ == "__main__":
+    cfg = Opts(cfg="configs/template.yml").parse_args()
+    check(cfg)

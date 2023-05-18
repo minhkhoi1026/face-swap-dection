@@ -1,32 +1,41 @@
 global:
   username: minhkhoi1026
   project_name: hcmus-fsd
-  run_name: single-vit224
+  run_name: single-vit224-newdataset
   save_dir: logs
   SEED: 47
-  resume: null
+  resume: logs/hcmus-fsd/mevtgp9p/checkpoints/singleVit224-epoch=8-val_acc=0.9996.ckpt
 dataset:
   name: FaceSpoofingDataset
   args:
     train:
-      source_path: casia-fasd/train
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop
       split_file: train_split.csv
-      oversampling: true
+      oversampling: True
     val:
-      source_path: casia-fasd/train
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop
       split_file: val_split.csv
-      oversampling: true
+      oversampling: False
+    test:
+      source_path: casia-fasd/test
+      split_file: all.csv
+      oversampling: False
 data_loader:
   train:
     args:
       batch_size: 64
       num_workers: 8
-      shuffle: true
+      shuffle: True
   val:
     args:
       batch_size: 64
       num_workers: 8
-      shuffle: false
+      shuffle: False
+  test:
+    args:
+      batch_size: 64
+      num_workers: 8
+      shuffle: False
 model:
   name: SingleHeadFrameClassifier
   input_size: 224
@@ -41,14 +50,15 @@ model:
 metric:
   - name: Accuracy
     args:
-      label_key: "labels"
+  - name: BinaryEqualErrorRate
+    args:
 trainer:
   num_worker: 8
   start_epoch: 0
   start_epoch: 0
   num_epochs: 100
   evaluate_interval: 1
-  log_interval: 1
+  log_interval: 20
   use_fp16: True
   debug: False
 optimizer:
@@ -64,11 +74,12 @@ lr_scheduler:
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "singleVit224-{epoch}-{val/accuracy:.4f}"
+      filename: "singleVit224-epoch={epoch}-val_acc={val/accuracy:.4f}"
       monitor: "val/accuracy"
       verbose: True
       save_top_k: 3
       mode: max
+      auto_insert_metric_name: False #https://github.com/Lightning-AI/lightning/issues/4012
   - name: EarlyStopping
     args:
       monitor: "val/loss"

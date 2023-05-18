@@ -5,6 +5,12 @@ data/
 weights/
 logs/
 data_extract/
+fsd-deepfakerapp/
+data/
+weights/
+logs/
+lightning_logs/
+src-old/
 
 # slurm
 slurm*

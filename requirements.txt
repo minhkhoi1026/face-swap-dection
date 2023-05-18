@@ -2,7 +2,7 @@ python-dotenv
 kaggle
 tqdm
 opencv-python
-tensorflow==2.10.0
+pytorch-lightning==1.5.10
 mtcnn
 tabulate
 wandb
@@ -10,3 +10,5 @@ pandas
 numba
 mediapipe
 face_alignment
+efficientnet_pytorch
+timm
