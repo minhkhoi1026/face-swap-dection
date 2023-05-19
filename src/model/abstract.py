@@ -161,8 +161,22 @@ class AbstractModel(pl.LightningModule):
         preds = self.extract_pred_from_forwarded_batch(forwarded_batch)
         output = self.test_metric(preds, targets)
         self.log_dict(output, on_step=True, on_epoch=True)
-
-        return {"loss": detach(loss)}
+        
+        # 4. return test data to accumulate and export to csv at end of epoch
+        img_paths = batch["img_paths"]
+        return {"loss": loss.detach(), 
+                "preds": preds.detach().cpu().numpy(), 
+                "targets": targets.detach().cpu().numpy(), 
+                "img_paths": img_paths}
+    
+    def test_epoch_end(self, outputs):
+        import pandas as pd
+        preds = np.concatenate([x["preds"] for x in outputs])
+        targets = np.concatenate([x["targets"] for x in outputs])
+        img_paths = np.concatenate([x["img_paths"] for x in outputs])
+        
+        result = pd.DataFrame({"pred": preds, "target": targets, "img_path": img_paths})
+        self.logger.log_table("result", dataframe=result)
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         train_loader = DataLoader(

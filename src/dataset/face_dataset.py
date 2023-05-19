@@ -73,6 +73,7 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
             "img": img,
             "msr_img": msr_img,
             "label": label,
+            "img_path": self.image_paths[idx]
         }
 
     def collate_fn(self, batch):
@@ -83,7 +84,8 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
         batch_as_dict = {
             "imgs": torch.stack([x["img"] for x in batch]),
             "msr_imgs": torch.stack([x["msr_img"] for x in batch]),
-            "labels": labels
+            "labels": labels,
+            "img_paths": [x["img_path"] for x in batch]
         }
 
         return batch_as_dict

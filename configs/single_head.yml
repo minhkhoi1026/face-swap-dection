@@ -4,7 +4,7 @@ global:
   run_name: single-vit224-newdataset
   save_dir: logs
   SEED: 47
-  resume: null
+  resume: logs/hcmus-fsd/kawyxjj0/checkpoints/singleVit224-epoch=2-val_acc=0.9478.ckpt
 dataset:
   name: FaceSpoofingDataset
   args:
@@ -17,7 +17,7 @@ dataset:
       split_file: all.csv
       oversampling: False
     test:
-      source_path: fsd-deepfakerapp/fsd-dataset/faceforensics-sample/face_crop
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/test
       split_file: all.csv
       oversampling: False
 data_loader:
