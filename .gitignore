@@ -1,6 +1,10 @@
 # dataset-related info
 wandb/
 casia-fasd/
+data/
+weights/
+logs/
+data_extract/
 fsd-deepfakerapp/
 data/
 weights/

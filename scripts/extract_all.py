@@ -10,6 +10,8 @@ import argparse
 import mediapipe as mp
 import math
 from numba import jit
+import numpy as np
+import face_alignment
 
 tf.get_logger().setLevel('ERROR')
 
@@ -22,14 +24,66 @@ import io
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", help="path of source data", required=True)
-    parser.add_argument("--dest", help="path of destination frame store", required=True)
+    parser.add_argument("--dest", help="path of destination image store", required=True)
     parser.add_argument("--sampling-ratio", help="specify a ratio x for frame sampling (0 < x <= 1)", type=float, required=True)
-    parser.add_argument("--threshold", help="specify a minimum confidence threshold c for face detection (0 < c <= 1)", type=float, default=0.9)
-    parser.add_argument("--extract-type", help="choices in {frame, face}", choices=["frame", "face"], default="frame")
-    parser.add_argument("--dataset-type", help="choices in {casia, normal}", choices=["casia", "normal"], default="normal")
-    parser.add_argument("--face-size", help="maximun of face width, default = 200", type=int, default=200)
+    parser.add_argument("--extract-type", help="choices in {all, frame, face}, default=all", choices=["all", "face", "landmark"], default="all")
     
     return parser.parse_args()
+
+
+
+fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
+def extract_landmark(image):
+    preds = fa.get_landmarks(image)
+    if preds == None or len(preds) == 0:
+        return None
+
+    listY = [int(y) for x,y in preds[0]]
+    face_size = max(listY) - min(listY)
+
+    thickness = int(face_size * thickness_percentage / 100)
+    blur = int(face_size * blur_percentage / 100)
+
+    pred_types = {'face': slice(0, 17),
+                'eyebrow1': slice(17, 22),
+                'eyebrow2': slice(22, 27),
+                'nose': slice(27, 31),
+                'nostril': slice(31, 36),
+                'eye1': slice(36, 42),
+                'eye2': slice(42, 48),
+                'lips': slice(48, 60),
+                'teeth': slice(60, 68),
+                }
+
+    landmark_vis = np.zeros(image.shape, dtype=np.uint8)
+
+    for key, value in pred_types.items():
+        cur_landmarks = preds[0][value].tolist()
+
+        if key in ["lips", "eye1", "eye2"]:
+            cur_landmarks.append(cur_landmarks[0])
+        for i in range(len(cur_landmarks)-1):
+            pt1 = (int(cur_landmarks[i][0]), int(cur_landmarks[i][1]))
+            pt2 = (int(cur_landmarks[i+1][0]), int(cur_landmarks[i+1][1]))
+
+            cv2.line(landmark_vis, pt1, pt2, (255, 255, 255), thickness)
+
+
+    blurred_img = cv2.blur(landmark_vis, (blur, blur))
+
+    scaled_image = blurred_img / 255
+
+    result_image = image * scaled_image
+
+
+    non_zero_pixels = np.nonzero(result_image)
+
+    min_y = np.min(non_zero_pixels[0])
+    max_y = np.max(non_zero_pixels[0])
+    min_x = np.min(non_zero_pixels[1])
+    max_x = np.max(non_zero_pixels[1])
+
+    return result_image[min_y:max_y+1, min_x:max_x+1]
 
 
 detector = MTCNN(min_face_size=200)
@@ -89,7 +143,7 @@ def detect_face_by_face_mesh(image):
     return min(list_x), min(list_y), max(list_x), max(list_y)
 
 
-def extract_faces(image, output_path, prefix):
+def extract_faces(image, dest_path, relative_path, prefix):
     # print(type(image))
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     iH, iW, _ = img.shape
@@ -119,17 +173,23 @@ def extract_faces(image, output_path, prefix):
     
     resized_img = cv2.resize(image, (iW,iH))
 
-    os.makedirs(output_path, exist_ok = True)
-    if extract_type == "frame":
-        cv2.imwrite(os.path.join(output_path, '{}.png'.format(prefix)), resized_img)
-    else:
+    if extract_type in ["all","landmark"]:
+        landmark = extract_landmark(resized_img)
+        if landmark is None:
+            return
+        output_path = os.path.join(dest_path, "landmark", relative_path)
+        os.makedirs(output_path, exist_ok = True)
+        cv2.imwrite(os.path.join(output_path, '{}_landmark.png'.format(prefix)), landmark)
+    if extract_type in ["all","face"]:
         crop_face = resized_img[min_y:max_y+1, min_x:max_x+1]
+        output_path = os.path.join(dest_path, "face_crop", relative_path)
+        os.makedirs(output_path, exist_ok = True)
         cv2.imwrite(os.path.join(output_path, '{}.png'.format(prefix)), crop_face)
+        
 
 @jit
-def extract_frames(data_path, output_path, prefix_images, sampling_ratio):
+def extract_frames(data_path, dest_path, relative_path, prefix_images, sampling_ratio):
     """Method to extract frames, either with ffmpeg or opencv."""
-    os.makedirs(output_path, exist_ok=True)
     reader = cv2.VideoCapture(data_path)
     frame_num = -1
     nframe = int(1 / sampling_ratio) # choose 1 frame per 1/x frames
@@ -148,30 +208,8 @@ def extract_frames(data_path, output_path, prefix_images, sampling_ratio):
         
         prefix = '{}_{:04d}'.format(prefix_images, frame_num)
         # extract faces from frame
-        extract_faces(image, output_path, prefix) # extract faces from single image
+        extract_faces(image, dest_path, relative_path, prefix) # extract faces from single image
     reader.release()
-
-@jit
-def extract_individual(individual_path, output_path, individual_name, sampling_ratio):
-    """Extracts all videos file structure"""
-    for video in os.listdir(individual_path):
-        # prefix of image file name
-        video_name = os.path.splitext(video)[0]
-        prefix = f"{individual_name}_{video_name}"
-        
-        # folder for store image base on type of image 
-        # image have name 1, 2 or HR_1 are real, others are fake
-        image_type = "real" if video_name in ["1", "2", "HR_1"] else "fake"
-        # print(video_name)
-        image_path = os.path.join(output_path, image_type)
-        
-        extract_frames(os.path.join(individual_path, video),
-                       image_path, prefix, sampling_ratio)
-
-@jit
-def extract_all_individual(source_path, dest_path, sampling_ratio):
-    for individual in tqdm(os.listdir(source_path)):
-        extract_individual(os.path.join(source_path, individual), dest_path, individual, sampling_ratio)
 
 @jit
 def extract_all_video(source_path, dest_path, sampling_ratio):
@@ -187,22 +225,18 @@ def extract_all_video(source_path, dest_path, sampling_ratio):
             video_name = os.path.splitext(video)[0]
             
             # folder for store image base on type of image 
-            # print(video_name)
-            image_path = os.path.join(dest_path, relative_path)
             
             extract_frames(os.path.join(source_path, relative_path, video),
-                        image_path, video_name, sampling_ratio)
+                        dest_path, relative_path, video_name, sampling_ratio)
 
 args = parse_args()
 
 source_path = args.source
 dest_path = args.dest
-confidence_threshold = args.threshold
 sampling_ratio = args.sampling_ratio
-dataset_type = args.dataset_type
 extract_type = args.extract_type
-face_size = args.face_size
-if dataset_type == "casia":
-    extract_all_individual(source_path, dest_path, sampling_ratio)
-else:
-    extract_all_video(source_path, dest_path, sampling_ratio)
+confidence_threshold = 0.9
+face_size = 200
+thickness_percentage = 10
+blur_percentage = 10
+extract_all_video(source_path, dest_path, sampling_ratio)
