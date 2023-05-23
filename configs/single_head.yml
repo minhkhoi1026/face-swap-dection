@@ -4,20 +4,20 @@ global:
   run_name: single-vit224-newdataset
   save_dir: logs
   SEED: 47
-  resume: logs/hcmus-fsd/kawyxjj0/checkpoints/singleVit224-epoch=2-val_acc=0.9478.ckpt
+  resume: Null
 dataset:
   name: FaceSpoofingDataset
   args:
     train:
-      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/train
+      source_path: fsd-deepfakerapp/deepfaker_app_change/train
       split_file: all.csv
       oversampling: True
     val:
-      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/test
+      source_path: fsd-deepfakerapp/deepfaker_app_change/test
       split_file: all.csv
       oversampling: False
     test:
-      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/test
+      source_path: fsd-deepfakerapp/deepfaker_app_change/test
       split_file: all.csv
       oversampling: False
 data_loader:
@@ -84,7 +84,7 @@ callbacks:
     args:
       monitor: "val/loss"
       min_delta: 0.0001
-      patience: 5
+      patience: 15
       verbose: False
       mode: min
   - name: LearningRateMonitor

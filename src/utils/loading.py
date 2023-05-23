@@ -60,6 +60,6 @@ def load_image_label(source_path, split_file, oversampling):
                 oversampled_rows = df[mask].sample(n=num_rows_to_add, replace=True)
                 df = pd.concat([df, oversampled_rows])
     
-    image_paths, labels = df['filepath'].to_list(), df["label"].to_list()
+    image_paths, landmark_paths, labels = df['filepath'].to_list(), df['landmark'].to_list(), df["label"].to_list()
     
-    return image_paths, labels
+    return image_paths, landmark_paths, labels
