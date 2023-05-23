@@ -82,7 +82,7 @@ class FaceSpoofingDataset(torch.utils.data.Dataset):
             labels = F.one_hot(labels, self.num_classes)
             
         batch_as_dict = {
-            "imgs": torch.stack([x["img"] for x in batch]),
+            "imgs": torch.stack ([x["img"] for x in batch]),
             "msr_imgs": torch.stack([x["msr_img"] for x in batch]),
             "labels": labels,
             "img_paths": [x["img_path"] for x in batch]

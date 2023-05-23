@@ -29,6 +29,9 @@ class BinaryEqualErrorRate(Metric):
     def compute(self):
         preds = torch.cat(self.preds).detach().cpu().numpy()
         targets = torch.cat(self.targets).detach().cpu().numpy()
+        # advoid all labels are 0 or 1
+        if (targets == 0).all() or (targets == 1).all():
+            return 2
         fpr, tpr, threshold = roc_curve(targets, preds, pos_label=1)
         fnr = 1 - tpr
         id = np.nanargmin(np.absolute((fnr - fpr)))

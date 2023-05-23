@@ -1,10 +1,10 @@
 global:
   username: rainbow-dango
   project_name: hcmus-fsd
-  run_name: single-vit224-newdataset
+  run_name: double-vit224-newdataset
   save_dir: logs
   SEED: 47
-  resume: logs/hcmus-fsd/kawyxjj0/checkpoints/singleVit224-epoch=2-val_acc=0.9478.ckpt
+  resume: null
 dataset:
   name: FaceSpoofingDataset
   args:
@@ -23,25 +23,31 @@ dataset:
 data_loader:
   train:
     args:
-      batch_size: 64
+      batch_size: 12
       num_workers: 8
       shuffle: True
   val:
     args:
-      batch_size: 64
+      batch_size: 12
       num_workers: 8
       shuffle: False
   test:
     args:
-      batch_size: 64
+      batch_size: 12
       num_workers: 8
       shuffle: False
 model:
-  name: SingleHeadFrameClassifier
+  name: DoubleHeadFrameClassifier
   input_size: 224
   num_classes: 2
   extractor:
     img_encoder:
+      name: VitNetExtractor
+      args:
+        version: vit_base_patch16_224
+        from_pretrained: True
+        freeze: False
+    msr_encoder:
       name: VitNetExtractor
       args:
         version: vit_base_patch16_224

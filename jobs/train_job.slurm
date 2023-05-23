@@ -18,4 +18,4 @@ conda activate fsd-torch
 
 pip install .
 
-python src/train.py -c configs/single_head.yml
+python src/train.py -c configs/double_head.yml
