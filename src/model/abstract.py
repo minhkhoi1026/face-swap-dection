@@ -32,8 +32,8 @@ class AbstractModel(pl.LightningModule):
             # image transform for data augmentation
             image_size = self.cfg["model"]["input_size"]
             image_transform_train = TRANSFORM_REGISTRY.get(
-                'train_classify_tf')(img_size=image_size)
-            image_transform_val = TRANSFORM_REGISTRY.get('test_classify_tf')(
+                self.cfg["dataset"]["transform"]["train"])(img_size=image_size)
+            image_transform_val = TRANSFORM_REGISTRY.get(self.cfg["dataset"]["transform"]["val"])(
                 img_size=image_size)
             img_normalize = TRANSFORM_REGISTRY.get("img_normalize")()
 
@@ -58,7 +58,7 @@ class AbstractModel(pl.LightningModule):
             # generate train and validation pytorch dataset
             # image transform for data augmentation
             image_size = self.cfg["model"]["input_size"]
-            image_transform_test = TRANSFORM_REGISTRY.get('test_classify_tf')(
+            image_transform_test = TRANSFORM_REGISTRY.get(self.cfg["dataset"]["transform"]["test"])(
                 img_size=image_size)
             img_normalize = TRANSFORM_REGISTRY.get("img_normalize")()
 

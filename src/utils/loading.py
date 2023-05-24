@@ -63,3 +63,25 @@ def load_image_label(source_path, split_file, oversampling):
     image_paths, labels = df['filepath'].to_list(), df["label"].to_list()
     
     return image_paths, labels
+
+def load_image_variant_label(source_path, split_file, oversampling):
+    def add_base_path(file_path):
+        return os.path.join(source_path, file_path)    
+    
+    df = pd.read_csv(os.path.join(source_path, split_file))
+    
+    df["filepath"] = df['filepath'].apply(add_base_path)
+    df["variant"] = df['variant'].apply(add_base_path)
+    
+    if oversampling:
+        count_labels = df['label'].value_counts()
+        max_count = count_labels.max()
+        
+        for label in count_labels.index:
+            if count_labels[label] < max_count:
+                num_rows_to_add = max_count - count_labels[label]
+                mask = df['label'] == label
+                oversampled_rows = df[mask].sample(n=num_rows_to_add, replace=True)
+                df = pd.concat([df, oversampled_rows])
+    
+    return df['filepath'].to_list(), df['variant'].to_list(), df["label"].to_list()
