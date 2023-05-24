@@ -7,17 +7,21 @@ global:
   resume: Null
 dataset:
   name: FaceSpoofingDataset
+  transform:
+    train: train_classify_tf
+    val: test_classify_tf
+    test: test_classify_tf
   args:
     train:
-      source_path: fsd-deepfakerapp/deepfaker_app_change/train
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/train
       split_file: all.csv
       oversampling: True
     val:
-      source_path: fsd-deepfakerapp/deepfaker_app_change/test
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/test
       split_file: all.csv
       oversampling: False
     test:
-      source_path: fsd-deepfakerapp/deepfaker_app_change/test
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/test
       split_file: all.csv
       oversampling: False
 data_loader:
@@ -84,7 +88,7 @@ callbacks:
     args:
       monitor: "val/loss"
       min_delta: 0.0001
-      patience: 15
+      patience: 5
       verbose: False
       mode: min
   - name: LearningRateMonitor

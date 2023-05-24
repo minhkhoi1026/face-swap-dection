@@ -13,10 +13,10 @@ class DoubleHeadFrameClassifier(AbstractModel):
         self.img_extractor = EXTRACTOR_REGISTRY.get(extractor_cfg["img_encoder"]["name"])(
             **extractor_cfg["img_encoder"]["args"]
         )
-        self.msr_extractor = EXTRACTOR_REGISTRY.get(extractor_cfg["msr_encoder"]["name"])(
-            **extractor_cfg["msr_encoder"]["args"]
+        self.img_variant_extractor = EXTRACTOR_REGISTRY.get(extractor_cfg["img_variant_encoder"]["name"])(
+            **extractor_cfg["img_variant_encoder"]["args"]
         )
-        embed_dim = self.msr_extractor.feature_dim
+        embed_dim = self.img_variant_extractor.feature_dim
 
         self.feat_attention = FeatAttention(embed_dim)
         
@@ -25,9 +25,9 @@ class DoubleHeadFrameClassifier(AbstractModel):
         self.loss = FocalLoss(num_classes=self.cfg["model"]["num_classes"])
         
     def forward(self, batch):
-        img_batch, msr_img_batch = batch["imgs"], batch["msr_imgs"]
-        img_feat, msr_img_feat = self.img_extractor(img_batch), self.msr_extractor(msr_img_batch)
-        feat = self.feat_attention(torch.stack([img_feat, msr_img_feat], axis=1))
+        img_batch, img_variant_batch = batch["imgs"], batch["img_variant"]
+        img_feat, img_variant_feat = self.img_extractor(img_batch), self.img_variant_extractor(img_variant_batch)
+        feat = self.feat_attention(torch.stack([img_feat, img_variant_feat], axis=1))
         logits = self.mlp(feat)
 
         return {
