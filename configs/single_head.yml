@@ -9,15 +9,15 @@ dataset:
   name: FaceSpoofingDataset
   args:
     train:
-      source_path: fsd-deepfakerapp/deepfaker_app_change/train
+      source_path: fsd-deepfakerapp/deepfaker_app/train
       split_file: all.csv
       oversampling: True
     val:
-      source_path: fsd-deepfakerapp/deepfaker_app_change/test
+      source_path: fsd-deepfakerapp/deepfaker_app/test
       split_file: all.csv
       oversampling: False
     test:
-      source_path: fsd-deepfakerapp/deepfaker_app_change/test
+      source_path: fsd-deepfakerapp/deepfaker_app/test
       split_file: all.csv
       oversampling: False
 data_loader:
