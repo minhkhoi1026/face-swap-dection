@@ -1,53 +1,64 @@
 import os
 import argparse
-import pandas as pd
 import shutil
+import json
+
+
 
 def parse_args():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Move files based on prediction and label.')
-    parser.add_argument('--csv', type=str, help='Path to the CSV file')
+    parser.add_argument('--json', type=str, help='Path to the JSON file')
     parser.add_argument('--dest', type=str, help='Path to the destination folder')
     return parser.parse_args()
 
 
 
-def move_files(csv_file, dest):
+def move_files(json_file, dest):
 
-    # Read the CSV file into a DataFrame
-    df = pd.read_csv(csv_file)
+    # Opening JSON file
+    f = open(json_file)
+    
+    # returns JSON object as a dictionary
+    data = json.load(f)
 
-    # Iterate over each row in the DataFrame
-    for index, row in df.iterrows():
-        filepath = row['filepath']
-        predict = row['predict']
-        label = row['label']
+    real2fake = os.path.join(dest,"real2fake")
+    fake2real = os.path.join(dest,"fake2real")
+    undecided = os.path.join(dest,"undecided")
+    os.makedirs(real2fake, exist_ok=True)
+    os.makedirs(fake2real, exist_ok=True)
+    os.makedirs(undecided, exist_ok=True)
 
-        real2fake = os.path.join(dest,"real2fake")
-        fake2real = os.path.join(dest,"fake2real")
-        # Check if predict is different from label
-        if predict != label:
-            destination_folder = fake2real if int(predict) == 1 else real2fake
+    for pred, label, filepath in data['data']:
+        predict = 1 if pred > 0.5 else 0
+
+        if 0.4 < pred < 0.6:
+            destination_folder = undecided
             
-            # Determine the path to the file to be moved
-            file_to_move = filepath
+            # Check if the file exists
+            if os.path.isfile(filepath):
+                # Copy the file to the destination folder
+                shutil.copy(filepath, destination_folder)
+                print(f"Copied file {filepath} to {destination_folder}")
+            else:
+                print(f"File {filepath} does not exist.")
+
+        elif predict != label:
+            destination_folder = fake2real if int(predict) == 1 else real2fake
 
             # Check if the file exists
-            if os.path.isfile(file_to_move):
-                # Move the file to the destination folder
-                shutil.move(file_to_move, destination_folder)
-                print(f"Moved file {file_to_move} to {destination_folder}")
+            if os.path.isfile(filepath):
+                # Copy the file to the destination folder
+                shutil.copy(filepath, destination_folder)
+                print(f"Copied file {filepath} to {destination_folder}")
             else:
-                print(f"File {file_to_move} does not exist.")
+                print(f"File {filepath} does not exist.")
 
 
 
 args = parse_args()
 
-# Path to the CSV file
-csv_file = args.csv
-
-# Path to the destination folder
+json_file = args.json
 dest = args.dest
 
-move_files(csv_file, dest)
+move_files(json_file, dest)
