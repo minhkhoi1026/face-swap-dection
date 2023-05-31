@@ -4,7 +4,7 @@ import random
 import pandas as pd
 import torch
 import torch.nn.functional as F
-from albumentations import Compose, Normalize
+from albumentations import Compose, Normalize, ReplayCompose
 import cv2
 # https://github.com/albumentations-team/albumentations/issues/1246
 cv2.setNumThreads(0)
@@ -23,7 +23,6 @@ class FaceVariantSpoofingDataset(torch.utils.data.Dataset):
         oversampling: bool,
         num_classes: int=2,
         img_transform=None,
-        img_transform_replay=None,
         img_normalize=None
     ):
         """
@@ -40,7 +39,6 @@ class FaceVariantSpoofingDataset(torch.utils.data.Dataset):
         
         self.image_paths, self.image_variant_paths, self.labels = load_image_variant_label(source_path, split_file, oversampling)
         self.img_transform = img_transform
-        self.img_transform_replay = img_transform_replay
         self.img_normalize = img_normalize
         self.num_classes = num_classes
 
@@ -53,10 +51,13 @@ class FaceVariantSpoofingDataset(torch.utils.data.Dataset):
         img_variant = cv2.imread(img_variant_path)
         img_variant = cv2.cvtColor(img_variant, cv2.COLOR_BGR2RGB)
 
-        if self.img_transform and self.img_transform_replay:
+        if self.img_transform:
             data = self.img_transform(image=img) # only works with albumentations
             img = data["image"]
-            img_variant = self.img_transform_replay(data['replay'], image=img_variant)["image"] # only works with albumentations
+            if 'replay' in data.keys():
+                img_variant = ReplayCompose.replay(data['replay'], image=img_variant)["image"] # only works with albumentations
+            else:
+                img_variant = self.img_transform(image=img_variant)["image"]
         
         img = self.img_normalize(image=img)["image"] # only works with albumentations
         img_variant = self.img_normalize(image=img_variant)["image"] # only works with albumentations
@@ -84,9 +85,7 @@ class FaceVariantSpoofingDataset(torch.utils.data.Dataset):
             
         batch_as_dict = {
             "imgs": torch.stack([x["img"] for x in batch]),
-            "msr_imgs": torch.stack([x["msr_img"] for x in batch]),
             "img_variants": torch.stack([x["img_variant"] for x in batch]),
-            "msr_img_variants": torch.stack([x["msr_img_variant"] for x in batch]),
             "labels": labels,
             "img_paths": [x["img_path"] for x in batch],
             "img_variant_paths": [x["img_variant_path"] for x in batch]

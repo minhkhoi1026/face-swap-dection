@@ -25,7 +25,7 @@ class DoubleHeadFrameClassifier(AbstractModel):
         self.loss = FocalLoss(num_classes=self.cfg["model"]["num_classes"])
         
     def forward(self, batch):
-        img_batch, img_variant_batch = batch["imgs"], batch["img_variant"]
+        img_batch, img_variant_batch = batch["imgs"], batch["img_variants"]
         img_feat, img_variant_feat = self.img_extractor(img_batch), self.img_variant_extractor(img_variant_batch)
         feat = self.feat_attention(torch.stack([img_feat, img_variant_feat], axis=1))
         logits = self.mlp(feat)
