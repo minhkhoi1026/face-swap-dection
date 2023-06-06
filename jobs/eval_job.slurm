@@ -12,7 +12,7 @@
 
 module purge
 
-module load graphviz-2.49.0-gcc-9.3.0-nc4zl4i
+# module load graphviz-2.49.0-gcc-9.3.0-nc4zl4i
 
 source ~/miniconda3/etc/profile.d/conda.sh
 
@@ -20,4 +20,4 @@ conda activate fsd-torch
 
 pip install .
 
-python src/test.py -c configs/single_head.yml
+python src/dataset/face_distilation_dataset.py 
