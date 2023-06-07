@@ -98,3 +98,45 @@ class Opts(ArgumentParser):
                     else:
                         cur = cur[sub_key]
         return global_config
+
+def parse_config(yaml_file, mode: str="raw"):
+    config = Config(yaml_file)
+    
+    if (mode == "raw"):
+        return config
+    
+    if (mode == "wandb"):
+        # remove _wandb config
+        config.pop("_wandb")
+        config.pop("wandb_version")
+        # for each key, assign it equal to its "value" key
+        for key in config.keys():
+            config[key] = config[key]["value"]
+        return config
+    
+def compare(d1, d2, path=""):
+    if (type(d1) != type(d2)):
+        print(f"Type mismatch between two instance!, d1: {type(d1)}, d2: {type(d2)}")
+        return
+
+    if isinstance(d1, dict):
+        for k in d1:
+            if k not in d2:
+                print(f"Key '{path}.{k}' exists in the first dictionary but not the second.")
+            else:
+                compare(d1[k], d2[k], f"{path}.{k}")
+    elif isinstance(d1, list):
+        if len(d1) != len(d2):
+            print(f"Array length mismatch for key '{path}': {len(d1)} != {len(d2)}")
+        else:
+            for i in range(len(d1)):
+                compare(d1[i], d2[i], f'{path}.[{i}]')
+    else:
+        if (d1!= d2):
+            print(f"Value mismatch for key '{path}': {d1} != {d2}")
+
+
+if __name__ == "__main__":
+    import sys
+    print(parse_config(sys.argv[1], mode="wandb"))
+    compare(parse_config(sys.argv[1], mode="wandb"), parse_config("configs/single_head.yml"))
