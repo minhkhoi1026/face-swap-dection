@@ -16,4 +16,4 @@ def train_classify_replay_tf(img_size: int):
         VerticalFlip(p=0.5),
         ShiftScaleRotate(rotate_limit=[-10,10], shift_limit=[0.15,0.15], scale_limit=[0.75, 1.25]),
         RandomBrightnessContrast(brightness_limit=0.25),
-    ]), ReplayCompose.replay
+    ])

@@ -6,7 +6,7 @@ global:
   SEED: 47
   resume: null
 dataset:
-  name: FaceLandmarkSpoofingDataset
+  name: FaceVariantSpoofingDataset
   transform:
     train: train_classify_replay_tf
     val: test_classify_tf
@@ -27,17 +27,17 @@ dataset:
 data_loader:
   train:
     args:
-      batch_size: 12
+      batch_size: 32
       num_workers: 8
       shuffle: True
   val:
     args:
-      batch_size: 12
+      batch_size: 32
       num_workers: 8
       shuffle: False
   test:
     args:
-      batch_size: 12
+      batch_size: 32
       num_workers: 8
       shuffle: False
 model:

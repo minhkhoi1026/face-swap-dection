@@ -16,7 +16,7 @@ def split(source_path, train_size):
                 # Get only relative path with source path
                 file_path = os.path.relpath(file_path, source_path)
                 # real image lie in `real` folder
-                label = int(file_path.startswith("real"))
+                label = int("real" in root)
                 rows.append((file_path, label))
                   
     df = pd.DataFrame(rows, columns=["filepath", "label"])
@@ -60,7 +60,7 @@ def split_variant(source_path, train_size):
 if __name__ == "__main__":
     source_path = sys.argv[1]
     train_size = float(sys.argv[2])
-    if sys.argv[3] == "landmark":
+    if len(sys.argv) > 3 and sys.argv[3] == "landmark":
         split_variant(source_path, train_size)
     else:
         split(source_path, train_size)
