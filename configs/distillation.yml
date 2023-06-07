@@ -1,0 +1,114 @@
+global:
+  username: rainbow-dango
+  project_name: hcmus-fsd
+  run_name: distill-single-vit224-mobilenetv3
+  save_dir: logs
+  SEED: 47
+  resume: Null
+dataset:
+  name: FaceSpoofingDataset
+  transform:
+    train: train_classify_tf
+    val: test_classify_tf
+    test: test_classify_tf
+  args:
+    train:
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/train
+      split_file: all.csv
+      oversampling: True
+    val:
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/test
+      split_file: all.csv
+      oversampling: False
+    test:
+      source_path: fsd-deepfakerapp/deepfaker_app/face_crop/test
+      split_file: all.csv
+      oversampling: False
+data_loader:
+  train:
+    args:
+      batch_size: 64
+      num_workers: 8
+      shuffle: True
+  val:
+    args:
+      batch_size: 64
+      num_workers: 8
+      shuffle: False
+  test:
+    args:
+      batch_size: 64
+      num_workers: 8
+      shuffle: False
+teacher_model:
+  model:
+    temperature: 2
+    weight_path: logs/hcmus-fsd/kawyxjj0/checkpoints/singleVit224-epoch=2-val_acc=0.9478.ckpt
+    name: SingleHeadFrameClassifier
+    input_size: 224
+    num_classes: 2
+    extractor:
+      img_encoder:
+        name: VitNetExtractor
+        args:
+          version: vit_base_patch16_224
+          from_pretrained: True
+          freeze: False
+student_model:
+  name: SingleHeadFrameClassifier
+  input_size: 224
+  num_classes: 2
+  extractor:
+    img_encoder:
+      name: MobileNetExtractor
+      args:
+        version: mobilenetv3_large_100
+        from_pretrained: True
+        freeze: False
+metric:
+  - name: Accuracy
+    args:
+  - name: BinaryEqualErrorRate
+    args:
+trainer:
+  num_worker: 8
+  start_epoch: 0
+  start_epoch: 0
+  num_epochs: 100
+  evaluate_interval: 1
+  log_interval: 20
+  use_fp16: True
+  debug: False
+optimizer:
+  lr: 0.0001
+lr_scheduler:
+  name: ReduceLROnPlateau
+  args:
+    mode: min
+    factor: 0.5
+    patience: 3
+    min_lr: 0.00001
+  monitor: val/loss
+callbacks:
+  - name: ModelCheckpoint
+    args:
+      filename: "singleVit224-epoch={epoch}-val_acc={val/accuracy:.4f}"
+      monitor: "val/accuracy"
+      verbose: True
+      save_top_k: 3
+      mode: max
+      auto_insert_metric_name: False #https://github.com/Lightning-AI/lightning/issues/4012
+  - name: EarlyStopping
+    args:
+      monitor: "val/loss"
+      min_delta: 0.0001
+      patience: 5
+      verbose: False
+      mode: min
+  - name: LearningRateMonitor
+    args:
+      logging_interval: step
+      
+
+
+
