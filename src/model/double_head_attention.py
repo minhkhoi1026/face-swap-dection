@@ -3,27 +3,29 @@ import torch
 from torch import nn
 
 from src.extractor import EXTRACTOR_REGISTRY
-from src.model.abstract import MLP, AbstractModel
-from src.loss.distil_loss import DistillationLoss
+from src.model.abstract import AbstractModel
 from src.loss.focal_loss import FocalLoss
+from src.model.feat_attention import FeatAttention
 
-
-class DistillationFrameClassifier(AbstractModel):
+class DoubleHeadFrameClassifier(AbstractModel):
     def init_model(self):
         extractor_cfg = self.cfg["model"]["extractor"]
         self.img_extractor = EXTRACTOR_REGISTRY.get(extractor_cfg["img_encoder"]["name"])(
             **extractor_cfg["img_encoder"]["args"]
         )
-        self.mlp = nn.Linear(self.img_extractor.feature_dim, self.cfg["model"]["num_classes"])
+        embed_dim = self.img_variant_extractor.feature_dim
 
-        self.distil_loss = DistillationLoss(**self.cfg["model"]["teacher_config"])
-        self.classfiy_loss = FocalLoss(self.cfg["model"]["num_classes"])
-        self.alpha = self.cfg["model"]["alpha"]
+        self.feat_attention = FeatAttention(embed_dim)
+        
+        self.mlp = nn.Linear(embed_dim, self.cfg["model"]["num_classes"])
+
+        self.loss = FocalLoss(num_classes=self.cfg["model"]["num_classes"])
         
     def forward(self, batch):
-        img_batch = batch["imgs"]
-        img_feat = self.img_extractor(img_batch)
-        logits = self.mlp(img_feat)
+        img_batch, img_variant_batch = batch["imgs"], batch["img_variants"]
+        img_feat, img_variant_feat = self.img_extractor(img_batch), self.img_variant_extractor(img_variant_batch)
+        feat = self.feat_attention(torch.stack([img_feat, img_variant_feat], axis=1))
+        logits = self.mlp(feat)
 
         return {
             "logits": logits
@@ -31,9 +33,7 @@ class DistillationFrameClassifier(AbstractModel):
 
     def compute_loss(self, forwarded_batch, input_batch):
         logits, labels = forwarded_batch["logits"], input_batch["labels"]
-        imgs = input_batch["imgs"]
-        return self.alpha * self.distil_loss(logits, imgs) + \
-                (1 - self.alpha) * self.classfiy_loss(logits, labels)
+        return self.loss(logits, labels)
     
     def extract_target_from_batch(self, batch):
         return batch["labels"].argmax(dim=1)

@@ -54,7 +54,7 @@ model:
   teacher_config:
     teacher_config_file: logs/vit94/config.yaml
     config_type: wandb
-    weight_path: logs/vit94/iypqhuou/checkpoints/singleVit224-epoch=25-val_acc=0.9478.ckpt
+    weight_path: "logs/vit94/iypqhuou/checkpoints/singleVit224-epoch=25-val_acc=0.9478.ckpt"
     temperature: 1.5
   alpha: 0.9
 metric:

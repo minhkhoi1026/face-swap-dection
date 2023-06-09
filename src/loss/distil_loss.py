@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torch.nn import CrossEntropyLoss, Softmax
+from torch.nn.functional import cross_entropy
 from src.model import MODEL_REGISTRY
 from src.utils.opt import parse_config
 
@@ -39,4 +39,4 @@ class DistillationLoss(nn.Module):
             # TODO: create general structure dependency of teacher model
             teacher_logits = self.teacher_model({"imgs": imgs})["logits"] / self.temperature
             teacher_prob = teacher_logits.softmax(dim=1)
-        return CrossEntropyLoss(student_logits, teacher_prob, self.reduction)
+        return cross_entropy(student_logits, teacher_prob, reduction=self.reduction)
