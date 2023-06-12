@@ -7,24 +7,23 @@ from src.model.abstract import AbstractModel
 from src.loss.focal_loss import FocalLoss
 from src.model.feat_attention import FeatAttention
 
-class DoubleHeadFrameClassifier(AbstractModel):
+class DoubleHeadAttentionFrameClassifier(AbstractModel):
     def init_model(self):
         extractor_cfg = self.cfg["model"]["extractor"]
+        
         self.img_extractor = EXTRACTOR_REGISTRY.get(extractor_cfg["img_encoder"]["name"])(
             **extractor_cfg["img_encoder"]["args"]
         )
-        embed_dim = self.img_variant_extractor.feature_dim
-
-        self.feat_attention = FeatAttention(embed_dim)
+        embed_dim = self.img_extractor.feature_dim
         
         self.mlp = nn.Linear(embed_dim, self.cfg["model"]["num_classes"])
 
         self.loss = FocalLoss(num_classes=self.cfg["model"]["num_classes"])
         
     def forward(self, batch):
-        img_batch, img_variant_batch = batch["imgs"], batch["img_variants"]
-        img_feat, img_variant_feat = self.img_extractor(img_batch), self.img_variant_extractor(img_variant_batch)
-        feat = self.feat_attention(torch.stack([img_feat, img_variant_feat], axis=1))
+        # dim=1 means concatenate along the channel dimension
+        combined_batch = torch.cat((batch["imgs"], batch["img_variants"]), dim=1)
+        feat = self.img_extractor(combined_batch)
         logits = self.mlp(feat)
 
         return {

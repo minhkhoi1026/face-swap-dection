@@ -6,7 +6,7 @@ from src.extractor.base_extractor import ExtractorNetwork
 @EXTRACTOR_REGISTRY.register()
 class VitNetExtractor(ExtractorNetwork):
 
-    def __init__(self, version, from_pretrained=True, freeze=False):
+    def __init__(self, version, in_channels=3, from_pretrained=True, freeze=False):
         super().__init__()
         available_versions = [
             'vit_tiny_patch16_224',
@@ -30,7 +30,8 @@ class VitNetExtractor(ExtractorNetwork):
         assert version in available_versions, f"version must be one of available_versions"
         if from_pretrained:
             self.extractor = timm.create_model(version,
-                                               pretrained=from_pretrained)
+                                               pretrained=from_pretrained,
+                                               in_chans=in_channels)
         self.feature_dim = self.extractor.num_features  # num_features for consistency with other models
         if freeze:
             self.freeze()
