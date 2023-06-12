@@ -182,7 +182,7 @@ def extract_faces(image, dest_path, relative_path, prefix):
         cv2.imwrite(os.path.join(output_path, '{}_landmark.png'.format(prefix)), landmark)
     if extract_type in ["all","face"]:
         crop_face = resized_img[min_y:max_y+1, min_x:max_x+1]
-        output_path = os.path.join(dest_path, "face_crop", relative_path)
+        output_path = os.path.join(dest_path, "face", relative_path)
         os.makedirs(output_path, exist_ok = True)
         cv2.imwrite(os.path.join(output_path, '{}.png'.format(prefix)), crop_face)
         

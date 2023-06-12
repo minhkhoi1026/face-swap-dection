@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=train-distil    # create a short name for your job
+#SBATCH --job-name=train-vit     # create a short name for your job
 #SBATCH --nodes=1                # node count
 #SBATCH --ntasks=1               # total number of tasks across all nodes
 #SBATCH --cpus-per-task=4        # cpu-cores per task (>1 if multi-threaded tasks)
@@ -12,8 +12,8 @@ module purge
 
 source ~/miniconda3/etc/profile.d/conda.sh
 
-conda activate fsd-torch
+conda activate fsd
 
 pip install .
 
-python src/train.py -c configs/distillation.yml
+python src/train.py -c configs/double_head.yml

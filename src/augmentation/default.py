@@ -3,7 +3,7 @@ from albumentations import (Compose, Normalize, RandomBrightnessContrast,
                             SmallestMaxSize, MotionBlur, GaussianBlur,
                             MedianBlur, Blur, RandomRotate90, HorizontalFlip,
                             VerticalFlip, HueSaturationValue, RandomSizedCrop,
-                            IAASharpen)
+                            IAASharpen, ToGray)
 import cv2
 # https://github.com/albumentations-team/albumentations/issues/1246
 cv2.setNumThreads(0)
@@ -38,8 +38,10 @@ def train_classify_tf(img_size: int):
         Resize(img_size, img_size),
         HorizontalFlip(p=0.5),
         VerticalFlip(p=0.5),
-        ShiftScaleRotate(rotate_limit=[-10,10], shift_limit=[0.15,0.15], scale_limit=[0.75, 1.25]),
+        RandomRotate90(p=0.5),
         RandomBrightnessContrast(brightness_limit=0.25),
+        ToGray(p=0.1),
+        ShiftScaleRotate(rotate_limit=[-15,15], shift_limit=[0.15,0.15], scale_limit=[0.75, 1.25]),
     ])
 
 
