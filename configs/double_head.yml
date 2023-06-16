@@ -62,12 +62,10 @@ metric:
     args:
   - name: BinaryEqualErrorRate
     args:
-  - name: Precision
+  - name: BinaryPrecision
     args:
-      task: binary
-  - name: Recall
+  - name: BinaryRecall
     args:
-      task: binary
 trainer:
   num_worker: 8
   start_epoch: 0

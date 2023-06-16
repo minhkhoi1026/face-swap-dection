@@ -2,11 +2,10 @@ import torch
 from . import METRIC_REGISTRY
 
 
-from torchmetrics import Recall as RecallMetric
+from torchmetrics.classification import BinaryRecall as BinaryRecallMetric
 
 @METRIC_REGISTRY.register()
-class Recall(RecallMetric):
+class BinaryRecall(BinaryRecallMetric):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "recall"
-
+        self.name = "binary_recall"

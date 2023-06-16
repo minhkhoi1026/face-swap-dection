@@ -136,11 +136,12 @@ def extract_faces(image, dest_path, relative_path, prefix):
 
     min_x1, min_y1, max_x1, max_y1 = detect_face_by_mtcnn(img)
     min_x2, min_y2, max_x2, max_y2 = detect_face_by_face_mesh(img)
+    print(prefix, (min_x1, min_y1, max_x1, max_y1), (min_x2, min_y2, max_x2, max_y2))
 
     min_x = max(min(min_x1, min_x2), 0)
     min_y = max(min(min_y1, min_y2), 0)
-    max_x = min(max(max_x1, max_x2), iW)
-    max_y = min(max(max_y1, max_y2), iH)
+    max_x = min(max(max_x1, max_x2), iW-1)
+    max_y = min(max(max_y1, max_y2), iH-1)
     if max_x <= min_x or max_y <= min_y:
         # print("no face in {}".format(prefix))
         return
@@ -157,6 +158,7 @@ def extract_faces(image, dest_path, relative_path, prefix):
         # print("detect face fail in {}".format(prefix))
         return
     
+    print(min_x, min_y, max_x, max_y)
     resized_img = cv2.resize(image, (iW,iH))
     w = max_x - min_x + 1
     h = max_y - min_y + 1
