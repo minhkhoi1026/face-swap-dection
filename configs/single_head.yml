@@ -13,16 +13,16 @@ dataset:
     test: test_classify_tf
   args:
     train:
-      source_path: fsd-deepfakerapp/dfapp_plus/train/
-      split_file: all.csv
+      source_path: fsd-deepfakerapp/hybrid/train/
+      split_file: all_50.csv
       oversampling: True
     val:
-      source_path: fsd-deepfakerapp/dfapp_plus/test/
-      split_file: all.csv
+      source_path: fsd-deepfakerapp/hybrid/test/
+      split_file: all_50.csv
       oversampling: False
     test:
-      source_path: fsd-deepfakerapp/dfapp_plus/test/
-      split_file: all.csv
+      source_path: fsd-deepfakerapp/hybrid/test/
+      split_file: all_50.csv
       oversampling: False
 data_loader:
   train:
@@ -72,13 +72,13 @@ lr_scheduler:
   args:
     mode: min
     factor: 0.5
-    patience: 3
+    patience: 5
     min_lr: 0.00001
   monitor: val/loss
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "singleVit224-epoch={epoch}-val_acc={val/accuracy:.4f}"
+      filename: "single-mobile-small-epoch={epoch}-val_acc={val/accuracy:.4f}"
       monitor: "val/accuracy"
       verbose: True
       save_top_k: 3

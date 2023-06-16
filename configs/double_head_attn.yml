@@ -1,7 +1,7 @@
 global:
   username: rainbow-dango
   project_name: hcmus-fsd
-  run_name: double-vit224-newdataset
+  run_name: double-shared-vit_tiny_patch16_224-newdataset
   save_dir: logs
   SEED: 47
   resume: null
@@ -13,16 +13,16 @@ dataset:
     test: test_classify_tf
   args:
     train:
-      source_path: fsd-deepfakerapp/deepfaker_app/train
-      split_file: all.csv
+      source_path: fsd-deepfakerapp/hybrid/train
+      split_file: all_50.csv
       oversampling: True
     val:
-      source_path: fsd-deepfakerapp/deepfaker_app/test
-      split_file: all.csv
+      source_path: fsd-deepfakerapp/hybrid/test
+      split_file: all_50.csv
       oversampling: False
     test:
-      source_path: fsd-deepfakerapp/deepfaker_app/test
-      split_file: all.csv
+      source_path: fsd-deepfakerapp/hybrid/test
+      split_file: all_50.csv
       oversampling: False
 data_loader:
   train:
@@ -48,10 +48,10 @@ model:
     img_encoder:
       name: VitNetExtractor
       args:
-        version: vit_base_patch16_224
+        version: vit_tiny_patch16_224
         from_pretrained: True
         freeze: False
-        in_channels: 6
+        in_channels: 6 # 3 orginal + 3 variant (landmark, msr)
 metric:
   - name: Accuracy
     args:
@@ -72,26 +72,27 @@ lr_scheduler:
   name: ReduceLROnPlateau
   args:
     mode: min
-    factor: 0.5
-    patience: 3
+    factor: 0.3
+    patience: 10
     min_lr: 0.00001
   monitor: val/loss
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "double-vit224-attn-landmark-epoch={epoch}-val_acc={val/accuracy:.4f}"
-      monitor: "val/accuracy"
+      filename: "double-shared-vit-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
+      monitor: "val/eer"
       verbose: True
       save_top_k: 3
-      mode: max
+      mode: min
       auto_insert_metric_name: False #https://github.com/Lightning-AI/lightning/issues/4012
   - name: EarlyStopping
     args:
       monitor: "val/loss"
-      min_delta: 0.0001
-      patience: 5
+      min_delta: 0.00001
+      patience: 20
       verbose: False
       mode: min
   - name: LearningRateMonitor
     args:
       logging_interval: step
+      

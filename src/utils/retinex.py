@@ -156,7 +156,7 @@ if __name__ == '__main__':
         # print(new_img.shape)
         # new_img = cv2.cvtColor(new_img[:,:,0], cv2.COLOR_GRAY2RGB)
         fig.add_subplot(4, 4, 2 * (index) + 2)
-        plt.imshow(new_img[:,:,0], cmap='gray')
+        plt.imshow(new_img[:,:,0], cmap='gray' )
     plt.show()
 
 # img = multiScaleRetinex(img, [10, 20, 30])

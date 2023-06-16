@@ -33,6 +33,7 @@ def parse_args():
 
 
 fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
+@jit
 def extract_landmark(image):
     preds = fa.get_landmarks(image)
     if preds == None or len(preds) == 0:
@@ -87,25 +88,9 @@ def extract_landmark(image):
 
 
 detector = MTCNN(min_face_size=200)
-
-def capture_output(func):
-    """Wrapper to capture print output."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        old_stdout = sys.stdout
-        new_stdout = io.StringIO()
-        sys.stdout = new_stdout
-        try:
-            return func(*args, **kwargs)
-        finally:
-            sys.stdout = old_stdout
-    return wrapper
-
-w_detect_face = capture_output(detector.detect_faces)
-
 def detect_face_by_mtcnn(image):
     with tf.device('/GPU:0'):
-        faces = w_detect_face(image)
+        faces = detector.detect_faces(image)
     max_face_size = 0
     iH, iW, _ = image.shape
     min_x = iW-1
@@ -130,6 +115,7 @@ face_mesh = mp_face_mesh.FaceMesh(
             max_num_faces=1,
             refine_landmarks=True,
             min_detection_confidence=0.5)
+@jit
 def detect_face_by_face_mesh(image):
     # Convert the BGR image to RGB before processing.
     results = face_mesh.process(image)
@@ -142,7 +128,7 @@ def detect_face_by_face_mesh(image):
     list_y = [int(data_point.y * iH) for data_point in face_landmarks.landmark]
     return min(list_x), min(list_y), max(list_x), max(list_y)
 
-
+@jit
 def extract_faces(image, dest_path, relative_path, prefix):
     # print(type(image))
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -172,9 +158,12 @@ def extract_faces(image, dest_path, relative_path, prefix):
         return
     
     resized_img = cv2.resize(image, (iW,iH))
+    w = max_x - min_x + 1
+    h = max_y - min_y + 1
+    crop_img = resized_img[max(min_x-w,0):min(max_x+w,iW) , max(min_y-h,0):min(max_y+h,iH)]
 
     if extract_type in ["all","landmark"]:
-        landmark = extract_landmark(resized_img)
+        landmark = extract_landmark(crop_img)
         if landmark is None:
             return
         output_path = os.path.join(dest_path, "landmark", relative_path)

@@ -34,24 +34,9 @@ def parse_args():
 
 detector = MTCNN(min_face_size=200)
 
-def capture_output(func):
-    """Wrapper to capture print output."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        old_stdout = sys.stdout
-        new_stdout = io.StringIO()
-        sys.stdout = new_stdout
-        try:
-            return func(*args, **kwargs)
-        finally:
-            sys.stdout = old_stdout
-    return wrapper
-
-w_detect_face = capture_output(detector.detect_faces)
-
 def detect_face_by_mtcnn(image):
     with tf.device('/GPU:0'):
-        faces = w_detect_face(image)
+        faces = detector.detect_faces(image)
     max_face_size = 0
     iH, iW, _ = image.shape
     min_x = iW-1
@@ -81,6 +66,7 @@ def detect_face_by_face_mesh(image):
     results = face_mesh.process(image)
 
     iH, iW, _ = image.shape
+    return iW, iH, 0, 0
     if not results.multi_face_landmarks:
         return iW, iH, 0, 0
     face_landmarks = results.multi_face_landmarks[0]

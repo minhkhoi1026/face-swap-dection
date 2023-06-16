@@ -17,6 +17,8 @@ class DoubleHeadFrameClassifier(AbstractModel):
             **extractor_cfg["img_variant_encoder"]["args"]
         )
         embed_dim = self.img_variant_extractor.feature_dim
+        
+        self.norm = nn.LayerNorm(2)
 
         self.feat_attention = FeatAttention(embed_dim)
         

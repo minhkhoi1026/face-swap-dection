@@ -1,28 +1,28 @@
 global:
   username: rainbow-dango
   project_name: hcmus-fsd
-  run_name: double-vit224-newdataset
+  run_name: double-mobilenetv3_small_100-landmark
   save_dir: logs
   SEED: 47
   resume: null
 dataset:
-  name: FaceSpoofingDataset
+  name: FaceVariantSpoofingDataset
   transform:
     train: train_classify_replay_tf
     val: test_classify_tf
     test: test_classify_tf
   args:
     train:
-      source_path: fsd-deepfakerapp/dfapp_plus/train/
-      split_file: all.csv
+      source_path: fsd-deepfakerapp/hybrid/train
+      split_file: all_50.csv
       oversampling: True
     val:
-      source_path: fsd-deepfakerapp/dfapp_plus/test/
-      split_file: all.csv
+      source_path: fsd-deepfakerapp/hybrid/test
+      split_file: all_50.csv
       oversampling: False
     test:
-      source_path: fsd-deepfakerapp/dfapp_plus/test/
-      split_file: all.csv
+      source_path: fsd-deepfakerapp/hybrid/test
+      split_file: all_50.csv
       oversampling: False
 data_loader:
   train:
@@ -46,15 +46,15 @@ model:
   num_classes: 2
   extractor:
     img_encoder:
-      name: VitNetExtractor
+      name: MobileNetExtractor
       args:
-        version: vit_base_patch16_224
+        version: mobilenetv3_small_100
         from_pretrained: True
         freeze: False
     img_variant_encoder:
-      name: VitNetExtractor
+      name: MobileNetExtractor
       args:
-        version: vit_base_patch16_224
+        version: mobilenetv3_small_100
         from_pretrained: True
         freeze: False
 metric:
@@ -62,6 +62,12 @@ metric:
     args:
   - name: BinaryEqualErrorRate
     args:
+  - name: Precision
+    args:
+      task: binary
+  - name: Recall
+    args:
+      task: binary
 trainer:
   num_worker: 8
   start_epoch: 0
@@ -77,24 +83,24 @@ lr_scheduler:
   name: ReduceLROnPlateau
   args:
     mode: min
-    factor: 0.5
-    patience: 3
+    factor: 0.3
+    patience: 10
     min_lr: 0.00001
   monitor: val/loss
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "doubleVit224-epoch={epoch}-val_acc={val/accuracy:.4f}"
-      monitor: "val/accuracy"
+      filename: "double-mobilenet-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
+      monitor: "val/eer"
       verbose: True
       save_top_k: 3
-      mode: max
+      mode: min
       auto_insert_metric_name: False #https://github.com/Lightning-AI/lightning/issues/4012
   - name: EarlyStopping
     args:
       monitor: "val/loss"
-      min_delta: 0.0001
-      patience: 15
+      min_delta: 0.00001
+      patience: 20
       verbose: False
       mode: min
   - name: LearningRateMonitor

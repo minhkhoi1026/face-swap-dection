@@ -2,13 +2,20 @@ import os
 import pandas as pd
 import sys
 from sklearn.model_selection import train_test_split
+import argparse
 
-def split(source_path, train_size):
+def split(source_path, train_size, sampling_ratio):
     rows = []
+
+    nimg = int(1 / sampling_ratio)
+
     # Traverse the directory tree
     for root, dirs, files in os.walk(source_path):
         # Loop over the files in the current directory
-        for name in files:
+        files.sort()
+        for id,name in enumerate(files):
+            if "video" in name and id % nimg != 0:
+                continue
             # Check if the file has a .png extension
             if name.endswith(".png"):
                 # Print the full path of the file
@@ -25,20 +32,26 @@ def split(source_path, train_size):
 
     train, val = train_test_split(df, train_size=train_size)
     
-    df.to_csv(os.path.join(source_path, "all.csv"), index=None)
-    train.to_csv(os.path.join(source_path, "train_split.csv"), index=None)
-    val.to_csv(os.path.join(source_path, "val_split.csv"), index=None)
+    df.to_csv(os.path.join(source_path, "all_{}.csv".format(int(sampling_ratio*100))), index=None)
+    train.to_csv(os.path.join(source_path, "train_split_{}.csv".format(int(sampling_ratio*100))), index=None)
+    val.to_csv(os.path.join(source_path, "val_split_{}.csv").format(int(sampling_ratio*100)), index=None)
 
-def split_variant(source_path, train_size):
+def split_variant(source_path, train_size, sampling_ratio):
     rows = []
     for imgtype in os.listdir(source_path):
         if "face" in imgtype:
             face_dir = imgtype
         if "landmark" in imgtype:
             landmark_dir = imgtype
-        
+    
+    nimg = int(1 / sampling_ratio)
+
     for label in os.listdir(os.path.join(source_path,face_dir)):
-        for file in os.listdir(os.path.join(source_path,face_dir,label)):
+        files = os.listdir(os.path.join(source_path,face_dir,label))
+        files.sort()
+        for id,file in enumerate(files):
+            if id % nimg != 0:
+                continue
             if file.endswith(".png"):
                 file_path = os.path.join(face_dir,label, file)
                 name = os.path.splitext(file)[0]+"_landmark.png"
@@ -53,14 +66,25 @@ def split_variant(source_path, train_size):
 
     train, val = train_test_split(df, train_size=train_size)
     
-    df.to_csv(os.path.join(source_path, "all.csv"), index=None)
-    train.to_csv(os.path.join(source_path, "train_split.csv"), index=None)
-    val.to_csv(os.path.join(source_path, "val_split.csv"), index=None)
+    df.to_csv(os.path.join(source_path, "all_{}.csv".format(int(sampling_ratio*100))), index=None)
+    train.to_csv(os.path.join(source_path, "train_split_{}.csv".format(int(sampling_ratio*100))), index=None)
+    val.to_csv(os.path.join(source_path, "val_split_{}.csv").format(int(sampling_ratio*100)), index=None)
+
+
 
 if __name__ == "__main__":
-    source_path = sys.argv[1]
-    train_size = float(sys.argv[2])
-    if len(sys.argv) > 3 and sys.argv[3] == "landmark":
-        split_variant(source_path, train_size)
+    # Add command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--src', type=str, help='Specify the source folder path.')
+    parser.add_argument('--type', choices=['variant', 'normal'], type=str, default = "normal")
+    parser.add_argument('--train-size', type=float, default = 0.85)
+    parser.add_argument('--sampling-ratio', type=float, default = 1)
+    args = parser.parse_args()
+
+    source_path = args.src
+    train_size = args.train_size
+    sampling_ratio = args.sampling_ratio
+    if args.type == "variant":
+        split_variant(source_path, train_size, sampling_ratio)
     else:
-        split(source_path, train_size)
+        split(source_path, train_size, sampling_ratio)

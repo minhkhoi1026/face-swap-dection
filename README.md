@@ -43,7 +43,7 @@ videos
 	    └── fake
 ```
 
-### Extract data
+## Extract data
 cmd:
 ```
 $ python scripts/extract_all.py  --source <> --dest <> --sampling-ratio <> --extract-type <>
@@ -96,6 +96,17 @@ Then file structer of source folder '''./data_extract/''' is as such:
 								.
 								.
 ```
+
+
+## Split dataset to train/test/val
+```
+python scripts/dataset_split.py --src <> --type <[normal,variant]> --sampling-ratio <>
+```
+For example:
+```
+python scripts/dataset_split.py --src fsd-deepfakerapp/dfapp_plus_landmark/train/ --type variant --sampling-ratio 0.5
+```
+
 
 
 ## CNN Backbone
