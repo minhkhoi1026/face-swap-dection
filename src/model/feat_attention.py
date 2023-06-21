@@ -13,13 +13,13 @@ class FeatAttention(nn.Module):
         self.feat_dim = feat_dim
         # vector of 1s feat dim
         self.q = nn.Parameter(torch.ones(feat_dim))
-        self.norm = nn.LayerNorm(feat_dim)
     
     def forward(self, X):
-        # X (bs, 2, e) with bs=batch_size, e=embed_dim, normalize tokens to avoid scale
-        X_norm = self.norm(X)
+        # X (bs, 2, e) with bs=batch_size, e=embed_dim
+        # X_norm = self.norm(X) # normalize tokens to avoid scale
+        
         # d (bs, 2,) multiple each feature vector with kernel
-        d = torch.tensordot(X_norm, self.q, dims=1)
+        d = torch.tensordot(X, self.q, dims=1)
         # w (bs, 2) softmax vector as weight to fusion
         w = nn.functional.softmax(d, dim=1)
         

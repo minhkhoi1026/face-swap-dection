@@ -6,7 +6,7 @@
 #SBATCH --mem-per-cpu=8G         # memory per cpu-core (4G is default)
 #SBATCH --gres=gpu:1             # number of gpus per node
 #SBATCH --time=24:00:00          # total run time limit (HH:MM:SS)
-#SBATCH --nodelist=selab2
+#SBATCH --nodelist=selab4
 
 
 module purge
@@ -15,4 +15,4 @@ source ~/miniconda3/etc/profile.d/conda.sh
 
 conda activate fsd
 
-python scripts/extract_all.py  --source data/roop_cut --dest data_extract/roop_cut --sampling-ratio 0.5
+python scripts/extract_all.py  --source data/replay --dest data_extract/roop_replay2 --sampling-ratio 0.5

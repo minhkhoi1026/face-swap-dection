@@ -1,12 +1,12 @@
 global:
   username: rainbow-dango
   project_name: hcmus-fsd
-  run_name: double-vit_tiny_patch16_224-landmark
+  run_name: double-mobilenetv3_small_100-msr
   save_dir: logs
   SEED: 47
-  resume: logs/hcmus-fsd/2hw96us1/checkpoints/double-vit-epoch=12-val_eer=0.0315-val_acc=0.9547.ckpt
+  resume: logs/hcmus-fsd/jq7wei7k/checkpoints/double-vit-epoch=17-val_eer=0.0840-val_acc=0.8958.ckpt
 dataset:
-  name: FaceVariantSpoofingDataset
+  name: FaceSpoofingDataset
   transform:
     train: train_classify_replay_tf
     val: test_classify_tf
@@ -46,15 +46,15 @@ model:
   num_classes: 2
   extractor:
     img_encoder:
-      name: VitNetExtractor
+      name: MobileNetExtractor
       args:
-        version: vit_tiny_patch16_224
+        version: mobilenetv3_small_100
         from_pretrained: True
         freeze: False
     img_variant_encoder:
-      name: VitNetExtractor
+      name: MobileNetExtractor
       args:
-        version: vit_tiny_patch16_224
+        version: mobilenetv3_small_100
         from_pretrained: True
         freeze: False
 metric:

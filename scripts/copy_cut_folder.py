@@ -7,13 +7,14 @@ def move_files(source_folder, destination_folder, action):
     if not os.path.exists(source_folder):
         raise FileNotFoundError("Source folder does not exist.")
     
-    # Create destination folder if it does not exist
-    if not os.path.exists(destination_folder):
-        os.makedirs(destination_folder)
-    
     # Loop through all files in the source folder
     for root, dirs, files in os.walk(source_folder):
         relative_path = os.path.relpath(root, source_folder)
+    
+        # Create destination folder if it does not exist
+        if not os.path.exists(os.path.join(destination_folder, relative_path)):
+            os.makedirs(os.path.join(destination_folder, relative_path))
+        
         for file in files:
             source_path = os.path.join(root, file)
             destination_path = os.path.join(destination_folder, relative_path, file)

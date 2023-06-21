@@ -6,10 +6,7 @@
 #SBATCH --mem-per-cpu=4G         # memory per cpu-core (4G is default)
 #SBATCH --gres=gpu:1             # number of gpus per node
 #SBATCH --time=24:00:00          # total run time limit (HH:MM:SS)
-#SBATCH --mail-type=begin        # send email when job begins
-#SBATCH --mail-type=end          # send email when job ends
-#SBATCH --mail-user=minhkhoi1026@gmail.com
-#SBATCH --nodelist=selab4
+#SBATCH --nodelist=selab2
 
 module purge
 
@@ -17,8 +14,11 @@ module purge
 
 source ~/miniconda3/etc/profile.d/conda.sh
 
-conda activate fsd-torch
+conda activate fsd
 
 pip install .
 
-python src/test.py -c configs/single_head.yml
+python src/test.py -c configs/double_head.yml
+python src/test.py -c configs/double_head_1.yml
+python src/test.py -c configs/double_head_2.yml
+python src/test.py -c configs/double_head_3.yml

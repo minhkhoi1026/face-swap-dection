@@ -12,6 +12,7 @@ import math
 from numba import jit
 import numpy as np
 import face_alignment
+import pandas as pd
 
 tf.get_logger().setLevel('ERROR')
 
@@ -23,10 +24,7 @@ import io
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", help="path of source data", required=True)
-    parser.add_argument("--dest", help="path of destination image store", required=True)
-    parser.add_argument("--sampling-ratio", help="specify a ratio x for frame sampling (0 < x <= 1)", type=float, required=True)
-    parser.add_argument("--extract-type", help="choices in {all, frame, face}, default=all", choices=["all", "face", "landmark"], default="all")
+    parser.add_argument("input", help="path of input data (video or image)", required=True)
     
     return parser.parse_args()
 
@@ -129,22 +127,22 @@ def detect_face_by_face_mesh(image):
     return min(list_x), min(list_y), max(list_x), max(list_y)
 
 @jit
-def extract_faces(image, dest_path, relative_path, prefix):
+def extract_faces(image, face_output, landmark_output):
     # print(type(image))
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     iH, iW, _ = img.shape
 
     min_x1, min_y1, max_x1, max_y1 = detect_face_by_mtcnn(img)
     min_x2, min_y2, max_x2, max_y2 = detect_face_by_face_mesh(img)
-    # print(prefix, (min_x1, min_y1, max_x1, max_y1), (min_x2, min_y2, max_x2, max_y2))
+    # print(name, (min_x1, min_y1, max_x1, max_y1), (min_x2, min_y2, max_x2, max_y2))
 
     min_x = max(min(min_x1, min_x2), 0)
     min_y = max(min(min_y1, min_y2), 0)
     max_x = min(max(max_x1, max_x2), iW-1)
     max_y = min(max(max_y1, max_y2), iH-1)
     if max_x <= min_x or max_y <= min_y:
-        print("no face in {}".format(prefix))
-        return
+        print("no face in {}".format(name))
+        return False
 
     while max_x - min_x > face_size:
         min_x //= 2
@@ -155,36 +153,51 @@ def extract_faces(image, dest_path, relative_path, prefix):
         iW //= 2
 
     if max_x <= min_x or max_y <= min_y:
-        print("detect face fail in {}".format(prefix))
-        return
+        print("detect face fail in {}".format(name))
+        return False
     
     # print(min_x, min_y, max_x, max_y)
     resized_img = cv2.resize(image, (iW,iH))
 
-    if extract_type in ["all","landmark"]:
-        landmark = extract_landmark(resized_img)
-        if landmark is None:
-            print("detect landmark fail in {}".format(prefix))
-            return
-        output_path = os.path.join(dest_path, "landmark", relative_path)
-        os.makedirs(output_path, exist_ok = True)
-        cv2.imwrite(os.path.join(output_path, '{}_landmark.png'.format(prefix)), landmark)
-    if extract_type in ["all","face"]:
-        crop_face = resized_img[min_y:max_y+1, min_x:max_x+1]
-        output_path = os.path.join(dest_path, "face", relative_path)
-        os.makedirs(output_path, exist_ok = True)
-        cv2.imwrite(os.path.join(output_path, '{}.png'.format(prefix)), crop_face)
-        
 
-@jit
-def extract_frames(data_path, dest_path, relative_path, prefix_images, sampling_ratio):
+    landmark = extract_landmark(resized_img)
+    if landmark is None:
+        print("detect landmark fail in {}".format(name))
+        return False
+    cv2.imwrite(landmark_output, landmark)
+
+    crop_face = resized_img[min_y:max_y+1, min_x:max_x+1]
+    cv2.imwrite(face_output, crop_face)
+    return True
+
+def extract_image(data_path):
+    dest_path = os.path.splitext(data_path)
+    os.makedirs(os.path.join(dest_path,"face"), exist_ok = True)
+    os.makedirs(os.path.join(dest_path,"landmark"), exist_ok = True)
+
+    landmark_output = os.path.join(dest_path, "landmark.png")
+    face_output = os.path.join(dest_path, "face.png")
+
+    rows = []
+    if extract_faces(image, face_output, landmark_output):
+        rows.append(face_output, landmark_output, 1)
+    df = pd.DataFrame(rows, columns=["filepath", "variant", "label"])
+    df.to_csv(os.path.join(dest_path, "all.csv"), index=None)
+
+
+def extract_video(data_path):
     """Method to extract frames, either with ffmpeg or opencv."""
+    dest_path = os.path.splitext(data_path)
+    os.makedirs(os.path.join(dest_path,"face"), exist_ok = True)
+    os.makedirs(os.path.join(dest_path,"landmark"), exist_ok = True)
+
     reader = cv2.VideoCapture(data_path)
     frame_num = -1
     nframe = int(1 / sampling_ratio) # choose 1 frame per 1/x frames
 
     total_frames = int(reader.get(cv2.CAP_PROP_FRAME_COUNT))
-    for frame_num in tqdm(range(total_frames), desc = prefix_images):
+    rows = []
+    for frame_num in tqdm(range(total_frames)):
         success, image = reader.read()
         
         # only process success frame
@@ -195,37 +208,52 @@ def extract_frames(data_path, dest_path, relative_path, prefix_images, sampling_
         if not frame_num % nframe == 0:
             continue
         
-        prefix = '{}_{:04d}'.format(prefix_images, frame_num)
+        name = '{:06d}.png'.format(frame_num)
+        landmark_output = os.path.join(dest_path, "landmark", name)
+        face_output = os.path.join(dest_path, "face", name)
         # extract faces from frame
-        extract_faces(image, dest_path, relative_path, prefix) # extract faces from single image
+        if extract_faces(image, face_output, landmark_output): # extract faces from single image
+            rows.append(face_output, landmark_output, 1)
     reader.release()
+    df = pd.DataFrame(rows, columns=["filepath", "variant", "label"])
+    df.to_csv(os.path.join(dest_path, "all.csv"), index=None)
 
-@jit
-def extract_all_video(source_path, dest_path, sampling_ratio):
-    """Extracts all videos file structure"""
-    for path, _, files in os.walk(source_path):
-        relative_path = os.path.relpath(path, source_path)
-        files.sort()
+def is_image(file_path):
+    try:
+        img = cv2.imread(file_path)
+        if img is not None:
+            return True
+        else:
+            return False
+    except cv2.error:
+        return False
 
-        print("In folder {}:".format(relative_path))
-        # for video in tqdm(files, desc=relative_path):
-        for video in files:
-            # prefix of image file name
-            video_name = os.path.splitext(video)[0]
-            
-            # folder for store image base on type of image 
-            
-            extract_frames(os.path.join(source_path, relative_path, video),
-                        dest_path, relative_path, video_name, sampling_ratio)
+def is_video(file_path):
+    try:
+        video = cv2.VideoCapture(file_path)
+        if video.isOpened():
+            return True
+        else:
+            return False
+    except cv2.error:
+        return False
+
+
 
 args = parse_args()
 
-source_path = args.source
-dest_path = args.dest
-sampling_ratio = args.sampling_ratio
-extract_type = args.extract_type
+source_path = args.input
+sampling_ratio = 1
 confidence_threshold = 0.9
 face_size = 200
 thickness_percentage = 10
 blur_percentage = 10
-extract_all_video(source_path, dest_path, sampling_ratio)
+
+
+
+if is_image(source_path):
+    extract_image(source_path)
+elif is_video(source_path):
+    extract_video(source_path)
+else:
+    print("Please choose a image or video!")
