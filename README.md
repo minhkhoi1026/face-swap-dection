@@ -154,6 +154,28 @@ $ python eval.py --bs 20 --dim 128 --backbone Xception --num-classes 1 --weight 
 ## Test
 To test the model using your webcam, run the following command: `python test.py`
 
+### For 1 video
+Run 
+```
+$ python src/eval_video.py --input <video_path>
+```
+Or call function `extract_video` or `extract_video_from_path` from src/eval_video
+```
+[
+    {
+        "frame_path": "abc.png",
+        "data": [
+            {
+                "bbox":(min_x,min_y,max_x,max_y),
+                "score":0.xyz
+            },
+            ...
+        ]
+    },
+    ...
+]
+```
+
 ## Slurm
 For those who run script in batch system:
 - Extract frame from dataset

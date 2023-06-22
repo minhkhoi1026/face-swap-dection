@@ -176,7 +176,8 @@ class AbstractModel(pl.LightningModule):
         img_paths = np.concatenate([x["img_paths"] for x in outputs])
         
         result = pd.DataFrame({"pred": preds, "target": targets, "img_path": img_paths})
-        self.logger.log_table("result", dataframe=result)
+        if hasattr(self.logger, 'log_table'):
+            self.logger.log_table("result", dataframe=result)
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         train_loader = DataLoader(
