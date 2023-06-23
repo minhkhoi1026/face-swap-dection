@@ -51,10 +51,11 @@ def create_overall_result_chart(data: pd.DataFrame):
 
 
 def create_frame_detail_result_chart(data):
+    max_frame_id = data["frame_id"].max()
     area_chart = alt.Chart(data).encode(
         x=alt.X(
             "frame_id",
-            scale=alt.Scale(domain=[0, len(data)]),
+            scale=alt.Scale(domain=[0, max_frame_id]),
             axis=alt.Axis(
                 title="Frame number", labelFontSize=12, labelFontWeight="bold"
             ),

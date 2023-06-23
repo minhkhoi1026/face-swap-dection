@@ -79,11 +79,9 @@ def main():
             st.altair_chart(create_frame_detail_result_chart(point_df), use_container_width=True)
 
             # frame visualization
-            frame_idx = st.slider("Frame", 0, len(frame_data) - 1)
-            frame = visualize_frame_prediction(frame_data.iloc[frame_idx])
+            frame_idx = st.select_slider("Choose a frame to visualize", frame_data["frame_id"].tolist())
+            frame = visualize_frame_prediction(frame_data[frame_data["frame_id"] == frame_idx].iloc[0])
             st.image(frame, channels="BGR", use_column_width=True)
-        
-
 
 if __name__ == "__main__":
     main()

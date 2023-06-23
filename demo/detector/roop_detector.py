@@ -196,9 +196,14 @@ class RoopDetector(BaseDetector):
 
         total_frames = int(reader.get(cv2.CAP_PROP_FRAME_COUNT))
         for frame_id in tqdm(range(total_frames)):
-            success, frame = reader.read()
+            success = reader.grab()
 
-            if frame_id % sampling or not success:
+            if frame_id % sampling:
+                continue
+            
+            success, frame = reader.retrieve()
+            
+            if not success:
                 continue
 
             if width > new_width:
@@ -212,7 +217,7 @@ class RoopDetector(BaseDetector):
         return dest_path, face_landmark      
     
     @st.cache_data
-    def predict(_self, video_bytes: bytes, sampling: int=1):
+    def predict(_self, video_bytes: bytes, sampling: int=10):
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(video_bytes)
             temp_file.flush()
@@ -224,3 +229,4 @@ class RoopDetector(BaseDetector):
 if __name__ == "__main__":
     detector = RoopDetector()
     print(detector.predict(open("data_verify/007_132.mp4", "rb").read()))
+    

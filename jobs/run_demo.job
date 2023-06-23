@@ -13,7 +13,8 @@ conda activate fsd
 
 pip install .
 
-ssh -fNT -R 8501:localhost:8501 root@server1.bachtam2001.com
+ssh -fNT -R 8501:localhost:8501 minhkhoi1026@server1.bachtam2001.com
 
 streamlit run demo/app.py --server.fileWatcherType none
+
 
