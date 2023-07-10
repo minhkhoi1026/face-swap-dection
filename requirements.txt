@@ -9,7 +9,7 @@ wandb
 pandas
 numba
 mediapipe
-face_alignment
+face_alignment==1.3.5
 efficientnet_pytorch
 timm
 grad-cam
