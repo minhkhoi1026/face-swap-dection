@@ -24,7 +24,6 @@ dataset:
       source_path: fsd-deepfakerapp/hybrid/test
       split_file: all.csv
       oversampling: False
-      # num_classes: 2
 data_loader:
   train:
     args:
@@ -38,7 +37,7 @@ data_loader:
       shuffle: False
   test:
     args:
-      batch_size: 32
+      batch_size: 16
       num_workers: 8
       shuffle: False
 model:

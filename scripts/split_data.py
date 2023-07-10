@@ -14,6 +14,13 @@ def parse_args():
     return parser.parse_args()
 
 
+def labelification(pred, L = 0.4, R = 0.6):
+    if pred < L:
+        return 0
+    if pred > R:
+        return 1
+    return -1
+
 
 def move_files_by_json(json_file, dest):
 

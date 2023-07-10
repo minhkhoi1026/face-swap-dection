@@ -133,19 +133,30 @@ def MSRCP(img, sigma_list, low_clip, high_clip):
 # img = cv2.resize(img, (299, 299))
 
 if __name__ == '__main__':
-    images = ['fake/0000.png', 'fake/0.png', 'fake/0001.png', 'fake/0001_00_00_01_0.jpg',
-              'real/0000.png', 'real/0.png', 'real/0001.png', 'real/0001_00_00_01_0.jpg']
+    images = ['fsd-deepfakerapp/hybrid/train/face/fake/048_ntqnhu_0368.png', 
+              'fsd-deepfakerapp/hybrid/train/face/fake/071_mnhduong_0390.png', 
+            #   'fsd-deepfakerapp/hybrid/train/face/fake/031_sedanh_0184.png', 
+            #   'fsd-deepfakerapp/hybrid/train/face/fake/video105_nqduy_0125.png',
+              'fsd-deepfakerapp/hybrid/train/face/real/087_0152.png', 
+            #   'fsd-deepfakerapp/hybrid/train/face/real/057_0282.png', 
+            #   'fsd-deepfakerapp/hybrid/train/face/real/048_0366.png', 
+              'fsd-deepfakerapp/hybrid/train/face/real/069_0226.png']
 
     import matplotlib.pyplot as plt
-    fig=plt.figure(figsize=(8, 8))
+    fig=plt.figure(figsize=(20, 8))
     columns = 4
-    rows = 4
+    rows = 2
 
     for index, img in enumerate(images):
+        print(img)
         img = cv2.imread(img)
         img = cv2.resize(img, (299, 299))
 
-        fig.add_subplot(4, 4, 2 * (index) + 1)
+        ax = fig.add_subplot(rows, columns, 2 * (index) + 1)
+        ax.set_xticks([])
+        ax.set_xticklabels([])
+        ax.set_yticks([])
+        ax.set_yticklabels([])
         tmp = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         plt.imshow(tmp)
 
@@ -155,9 +166,13 @@ if __name__ == '__main__':
         # new_img = multiScaleRetinex(img, [5, 10, 15])
         # print(new_img.shape)
         # new_img = cv2.cvtColor(new_img[:,:,0], cv2.COLOR_GRAY2RGB)
-        fig.add_subplot(4, 4, 2 * (index) + 2)
+        ax = fig.add_subplot(rows, columns, 2 * (index) + 2)
+        ax.set_xticks([])
+        ax.set_xticklabels([])
+        ax.set_yticks([])
+        ax.set_yticklabels([])
         plt.imshow(new_img[:,:,0], cmap='gray' )
-    plt.show()
+    plt.savefig("hehe.png")
 
 # img = multiScaleRetinex(img, [10, 20, 30])
 # img = automatedMSRCR(img, [10,20,30])

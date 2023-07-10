@@ -58,7 +58,7 @@ def split_variant(source_path, train_size, sampling_ratio):
                 landmark_path = os.path.join(landmark_dir,label, name)
                 if not os.path.exists(os.path.join(source_path,landmark_path)):
                     continue
-                rows.append((file_path, landmark_path, int("real" in file_path)))
+                rows.append((file_path, landmark_path, int("fake" in file_path)))
     
     df = pd.DataFrame(rows, columns=["filepath", "variant", "label"])
     # shuffle to avoid batch contain all 0-labeled or 1-labeled sample

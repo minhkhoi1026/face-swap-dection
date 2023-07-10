@@ -12,3 +12,6 @@ mediapipe
 face_alignment
 efficientnet_pytorch
 timm
+grad-cam
+streamlit
+altair

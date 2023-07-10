@@ -81,15 +81,17 @@ def extract_face(image, dest, frame_id):
                 pt2 = (int(cur_landmarks[i+1][0]), int(cur_landmarks[i+1][1]))
 
                 cv2.line(landmark_vis, pt1, pt2, (255, 255, 255), thickness)
-        blurred_img = cv2.blur(landmark_vis, (blur, blur))
-        scaled_image = blurred_img / 255
-        result_image = image * scaled_image
 
         non_zero_pixels = np.nonzero(result_image)
         min_y = np.min(non_zero_pixels[0])
         max_y = np.max(non_zero_pixels[0])
         min_x = np.min(non_zero_pixels[1])
         max_x = np.max(non_zero_pixels[1])
+        min_y -= (max_y - min_y) / 4
+
+        blurred_img = cv2.blur(landmark_vis, (blur, blur))
+        scaled_image = blurred_img / 255
+        result_image = image * scaled_image
 
         landmark_crop = result_image[min_y:max_y+1, min_x:max_x+1]
         face_crop = image[min_y:max_y+1, min_x:max_x+1]
