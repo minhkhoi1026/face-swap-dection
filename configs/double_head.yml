@@ -1,10 +1,10 @@
 global:
   username: rainbow-dango
   project_name: hcmus-fsd
-  run_name: double-vit_tiny_patch16_224-landmark
+  run_name: double-vit_tiny_patch16_224-landmark-scratch
   save_dir: logs
   SEED: 47
-  resume: logs/hcmus-fsd/1fox0thl/checkpoints/double-vit-epoch=22-val_eer=0.0653-val_acc=0.9177.ckpt
+  resume: null
 dataset:
   name: FaceVariantSpoofingDataset
   transform:
@@ -49,13 +49,13 @@ model:
       name: VitNetExtractor
       args:
         version: vit_tiny_patch16_224
-        from_pretrained: True
+        from_pretrained: False
         freeze: False
     img_variant_encoder:
       name: VitNetExtractor
       args:
         version: vit_tiny_patch16_224
-        from_pretrained: True
+        from_pretrained: False
         freeze: False
 metric:
   - name: Accuracy
@@ -70,7 +70,7 @@ trainer:
   num_worker: 8
   start_epoch: 0
   start_epoch: 0
-  num_epochs: 100
+  num_epochs: 2000
   evaluate_interval: 1
   log_interval: 20
   use_fp16: True
@@ -88,7 +88,7 @@ lr_scheduler:
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "double-vit-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
+      filename: "double-vit-scratch-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
       monitor: "val/eer"
       verbose: True
       save_top_k: 3

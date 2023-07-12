@@ -28,10 +28,9 @@ class VitNetExtractor(ExtractorNetwork):
         ]
         print(version)
         assert version in available_versions, f"version must be one of available_versions"
-        if from_pretrained:
-            self.extractor = timm.create_model(version,
-                                               pretrained=from_pretrained,
-                                               in_chans=in_channels)
+        self.extractor = timm.create_model(version,
+                                            pretrained=from_pretrained,
+                                            in_chans=in_channels)
         self.feature_dim = self.extractor.num_features  # num_features for consistency with other models
         if freeze:
             self.freeze()

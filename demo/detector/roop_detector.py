@@ -33,7 +33,7 @@ from demo.detector.base_detector import BaseDetector
 
 # @st.cache_resource
 def create_face_alignment_model():
-    return  face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
+    return face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
 
 # @st.cache_resource
 def create_detector_model(cfg):
@@ -93,9 +93,8 @@ class RoopDetector(BaseDetector):
         self.grad_cam_model = GradCAMCompatibleModel(self.model)
         self.cam = GradCAMPlusPlus(model=self.grad_cam_model,
                             target_layers=[
-                                self.grad_cam_model.model.img_extractor.extractor.blocks[-1].norm1, 
-                                self.grad_cam_model.model.img_variant_extractor.extractor.blocks[-1].mlp,
-                                # self.grad_cam_model.model.feat_attention,   
+                                self.grad_cam_model.model.img_extractor.extractor.blocks[1].norm1, 
+                                # self.grad_cam_model.model.img_variant_extractor.extractor.blocks[-1].mlp,
                                 ],
                             use_cuda=torch.cuda.is_available(),
                             reshape_transform=partial(reshape_transform, height=patch_size, width=patch_size))
