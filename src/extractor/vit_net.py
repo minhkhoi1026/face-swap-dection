@@ -26,7 +26,6 @@ class VitNetExtractor(ExtractorNetwork):
             'vit_large_patch16_384',
             'vit_base_patch16_224_in21k'
         ]
-        print(version)
         assert version in available_versions, f"version must be one of available_versions"
         self.extractor = timm.create_model(version,
                                             pretrained=from_pretrained,

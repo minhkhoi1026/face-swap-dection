@@ -13,18 +13,27 @@ from components.chart import (
 from components.frame import visualize_frame_prediction
 from demo.detector import DETECTOR_REGISTRY
 
-def get_predictions(video_bytes: bytes, selected_model: typing.List[str]) -> pd.DataFrame:
+@st.cache_resource
+def get_model(model_name: str):
+    return DETECTOR_REGISTRY.get(model_name)()
+
+@st.cache_data
+def predict(video_bytes: bytes, model_name: str, sampling: int):
+    model = get_model(model_name)
+    return model.predict(video_bytes, sampling)
+
+@st.cache_data
+def get_predictions(video_bytes: bytes, selected_model: typing.List[str], sampling: int) -> pd.DataFrame:
     result = []
     for model_name in selected_model:
-        model = DETECTOR_REGISTRY.get(model_name)()
-        result.append([model_name, model.predict(video_bytes)])
+        result.append([model_name, predict(video_bytes, model_name, sampling)])
     return pd.DataFrame(result, columns=["model", "frame_predictions"])
 
 def aggregate_predictions(predictions: list) -> float:
     """Aggreate mean prediction of all frame"""
     def aggregate_face_scores(face_data: list) -> float:
         """Aggregate faces score in one frame by taking the minimum score."""
-        return np.min(list(x["score"] for x in face_data)) if face_data else 100.0
+        return np.max(list(x["score"] for x in face_data)) if face_data else 100.0
     return predictions.apply(lambda x: aggregate_face_scores(x)).mean().round(2)
 
 def main():
@@ -44,6 +53,10 @@ def main():
     uploaded_file = input_form.file_uploader("video_uploader", type="mp4")
     selected_model = input_form.multiselect("Choose all detector you want", model_list)
     
+    with input_form.expander("Advanced settings"):
+        sampling_ratio = st.slider("Sampling ratio", min_value=0.0, max_value=1.0, value=0.1, step=0.1)
+        sampling = int(1 / sampling_ratio)
+    
     submitted = input_form.form_submit_button("Submit")
     
     if submitted:
@@ -55,7 +68,7 @@ def main():
     if uploaded_file and selected_model:
         # get prediction data
         video_bytes = uploaded_file.read()
-        model_predictions = get_predictions(video_bytes, selected_model)
+        model_predictions = get_predictions(video_bytes, selected_model, sampling)
         
         # overall result
         st.subheader("Your video overall result")
@@ -74,13 +87,16 @@ def main():
         
             # area chart
             point_df = frame_data[["frame_id"]]
-            point_df["predict"] = frame_data["predict"].apply(lambda x: min(item["score"] for item in x) if x else 100.0)
+            point_df["predict"] = frame_data["predict"].apply(lambda x: max(item["score"] for item in x) if x else 100.0)
             
             st.altair_chart(create_frame_detail_result_chart(point_df), use_container_width=True)
 
             # frame visualization
             frame_idx = st.select_slider("Choose a frame to visualize", frame_data["frame_id"].tolist())
-            frame = visualize_frame_prediction(frame_data[frame_data["frame_id"] == frame_idx].iloc[0])
+            is_show_gradcam = st.checkbox("Click for hint of fake region", value=False)
+            frame = visualize_frame_prediction(frame_data[frame_data["frame_id"] == frame_idx].iloc[0],
+                                               fake_label=1,
+                                               is_show_gradcam=is_show_gradcam)
             st.image(frame, channels="BGR", use_column_width=True)
 
 if __name__ == "__main__":
