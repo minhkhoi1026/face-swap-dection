@@ -11,11 +11,11 @@ from components.chart import (
     create_frame_detail_result_chart,
 )
 from components.frame import visualize_frame_prediction
-from demo.detector import DETECTOR_REGISTRY
+from demo.detector import DETECTOR_FACTORY
 
 @st.cache_resource
 def get_model(model_name: str):
-    return DETECTOR_REGISTRY.get(model_name)()
+    return DETECTOR_FACTORY.get(model_name)
 
 @st.cache_data
 def predict(video_bytes: bytes, model_name: str, sampling: int):
@@ -43,7 +43,7 @@ def main():
         layout="wide"
     )
     
-    model_list = DETECTOR_REGISTRY.list_all()
+    model_list = DETECTOR_FACTORY.list_all()
     st.title("Deepfake Detection Tool")
     
     # create an form

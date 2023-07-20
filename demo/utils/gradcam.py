@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import torch
 
 def show_cam_on_image(img: np.ndarray,
                       mask: np.ndarray,
@@ -46,3 +47,25 @@ def show_cam_on_image(img: np.ndarray,
     cam = cam / np.max(cam)
     
     return np.uint8(255 * cam)
+
+def reshape_transform(tensor, height=14, width=14):
+    result = tensor[:, 1:, :].reshape(tensor.size(0),
+                                      height, width, tensor.size(2))
+    # Bring the channels to the first dimension,
+    # like in CNNs.
+    result = result.transpose(2, 3).transpose(1, 2)
+    return result
+
+class GradCAMCompatibleModel(torch.nn.Module):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+    
+    def forward(self, batch):
+        # (B, 2*C, H, W)
+        batch_dict = {
+            "imgs": batch[:, :3, :, :],
+            "img_variants": batch[:, 3:, :, :]
+        }
+        result = self.model(batch_dict)["logits"]
+        return result

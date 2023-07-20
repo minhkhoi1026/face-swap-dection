@@ -1,0 +1,10 @@
+detectors:
+  - class: ResNetDetector
+    args:
+      name: 'Roop Detector - ResNet'
+      cfg_path: 'configs/inference/double_head_resnet_infer.yml'
+  - class: ViTDetector
+    args:
+      name: 'Roop Detector - ViT'
+      cfg_path: 'configs/inference/double_head_vit_infer.yml'
+    
