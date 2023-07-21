@@ -59,7 +59,7 @@ def main():
     selected_model = input_form.multiselect("Choose all detector you want", model_list)
     
     with input_form.expander("Advanced settings"):
-        sampling_ratio = st.slider("Sampling ratio", min_value=0.0, max_value=1.0, value=0.1, step=0.1)
+        sampling_ratio = st.slider("Sampling ratio", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
         sampling = int(1 / sampling_ratio)
     
     submitted = input_form.form_submit_button("Submit")
@@ -96,24 +96,14 @@ def main():
             
             st.altair_chart(create_frame_detail_result_chart(point_df), use_container_width=True)
 
-            # Get list of "VIDEO" and "FRAME"
-            analyze_modes = [mode.value for mode in ANALYZE_MODE]
-            analyze_mode = st.selectbox("Which type of data you want to analyze?", analyze_modes, index=0)
             
-            if (analyze_mode == ANALYZE_MODE.VIDEO):
-                # video visualization
-                is_show_gradcam = st.checkbox("Click for hint of fake region", value=False)
-                video_path = visualize_video_prediction(frame_data, fake_label=1, is_show_gradcam=is_show_gradcam)
-                with open(video_path, "rb") as video:
-                    st.video(video, format="video/mp4", start_time=0)
-            elif (analyze_mode == ANALYZE_MODE.FRAME):
-                # frame visualization
-                frame_idx = st.select_slider("Choose a frame to visualize", frame_data["frame_id"].tolist())
-                is_show_gradcam = st.checkbox("Click for hint of fake region", value=False)
-                frame = visualize_frame_prediction_st(frame_data[frame_data["frame_id"] == frame_idx].iloc[0],
-                                                fake_label=1,
-                                                is_show_gradcam=is_show_gradcam)
-                st.image(frame, channels="BGR", use_column_width=True)
+            # frame visualization
+            frame_idx = st.select_slider("Choose a frame to visualize", frame_data["frame_id"].tolist())
+            is_show_gradcam = st.checkbox("Click for hint of fake region", value=False)
+            frame = visualize_frame_prediction_st(frame_data[frame_data["frame_id"] == frame_idx].iloc[0],
+                                            fake_label=1,
+                                            is_show_gradcam=is_show_gradcam)
+            st.image(frame, channels="BGR", use_column_width=True)
 
 if __name__ == "__main__":
     main()
