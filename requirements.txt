@@ -9,9 +9,11 @@ wandb
 pandas
 numba
 mediapipe
-face_alignment==1.3.5
+face_alignment
 efficientnet_pytorch
 timm
 grad-cam
 streamlit
 altair
+albumentations
+loguru
