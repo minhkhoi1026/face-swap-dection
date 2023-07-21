@@ -48,8 +48,10 @@ class ResNetDetector(TorchLightningDetector):
         return grad_cam_model, cam
     
     def get_grad_cam(self, batch):
+        n = batch["imgs"].shape[0]
+        targets = [ClassifierOutputTarget(1) for i in range(n)]
         return self.cam(input_tensor=torch.cat((batch["imgs"], batch["img_variants"]), dim=1),
-                                            targets=None,
+                                            targets=targets,
                                             eigen_smooth=False,
                                             aug_smooth=False)
     
