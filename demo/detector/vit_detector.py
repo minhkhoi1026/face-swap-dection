@@ -30,8 +30,8 @@ class ViTDetector(TorchLightningDetector):
         grad_cam_model = GradCAMCompatibleModel(self.create_detector_model(cfg))
         cam = GradCAMPlusPlus(model=grad_cam_model,
                             target_layers=[
-                                grad_cam_model.model.img_extractor.extractor.blocks[-8],
-                                grad_cam_model.model.img_variant_extractor.extractor.blocks[-8],
+                                grad_cam_model.model.img_extractor.extractor.blocks[-6],
+                                grad_cam_model.model.img_variant_extractor.extractor.blocks[-6],
                                 ],
                             use_cuda=torch.cuda.is_available(),
                             reshape_transform=partial(reshape_transform, height=14, width=14)
