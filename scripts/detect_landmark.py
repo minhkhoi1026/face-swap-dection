@@ -15,7 +15,7 @@ def parse_args():
     
     return parser.parse_args()
 
-fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
+fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
 def extract_frames(data_path, output_path, prefix):
     image = cv2.imread(data_path)
     preds = fa.get_landmarks(image)

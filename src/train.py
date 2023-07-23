@@ -2,6 +2,7 @@ import torch
 from pytorch_lightning.trainer import seed_everything
 import pytorch_lightning as pl
 from pytorch_lightning.loggers.wandb import WandbLogger
+from pytorch_lightning.utilities import rank_zero_only
 import datetime
 
 from src.callback import CALLBACK_REGISTRY
@@ -21,7 +22,11 @@ def train(config):
         entity=config["global"]["username"],
     )
     wandb_logger.watch((model))
-    wandb_logger.experiment.config.update(config)
+    
+    # only save on rank-0 process if run on multiple GPUs
+    # https://github.com/Lightning-AI/lightning/issues/13166
+    if rank_zero_only.rank == 0:
+        wandb_logger.experiment.config.update(config)
 
     callbacks = [
         CALLBACK_REGISTRY.get(mcfg["name"])(**mcfg["args"])

@@ -9,7 +9,7 @@ class FaceFAFIExtractor(BaseExtractor):
     def __init__(self, thickness_percentage, blur_percentage):
         self.thickness_percentage = thickness_percentage
         self.blur_percentage = blur_percentage
-        self.face_landmark_predictor = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
+        self.face_landmark_predictor = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
         self.pred_types = {'face': slice(0, 17),
                     'eyebrow1': slice(17, 22),
                     'eyebrow2': slice(22, 27),

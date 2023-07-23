@@ -39,7 +39,7 @@ result = "data_verify/report/landmark-process/result"
 
 
 for file in os.listdir(frame):
-    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
+    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
     image = cv2.imread(os.path.join(frame,file))
     fl_image = cv2.imread(os.path.join(frame,file))
 

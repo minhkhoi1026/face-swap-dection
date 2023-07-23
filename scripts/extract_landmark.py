@@ -22,7 +22,7 @@ def parse_args():
 
 @jit
 def extract_landmark(image_path, output_path, prefix, thickness_percentage, blur_percentage, is_crop):
-    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
+    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
     image = cv2.imread(image_path)
     preds = fa.get_landmarks(image)
     if preds == None or len(preds) == 0:

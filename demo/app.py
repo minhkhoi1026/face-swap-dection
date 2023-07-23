@@ -14,10 +14,6 @@ from components.frame import visualize_frame_prediction_st, visualize_video_pred
 from demo.detector import DETECTOR_FACTORY
 from enum import Enum
 
-class ANALYZE_MODE(str, Enum):
-    VIDEO = "VIDEO"
-    FRAME = "FRAME"
-
 @st.cache_resource
 def get_model(model_name: str):
     return DETECTOR_FACTORY.get(model_name)

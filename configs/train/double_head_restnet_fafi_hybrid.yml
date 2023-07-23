@@ -1,13 +1,13 @@
 global:
   username: rainbow-dango
   project_name: hcmus-fsd
-  run_name: double-resnet50-face-msr
+  run_name: double-resnet50_flickr_face-fafi-hybrid
   save_dir: logs
   SEED: 47
-  resume: logs/hcmus-fsd/bnjkm8n9/checkpoints/double-resnetface-epoch=6-val_eer=0.0230-val_acc=0.9656.ckpt
+  resume: Null
 dataset:
-  name: FaceSpoofingDataset
-  transform: 
+  name: FaceVariantSpoofingDataset
+  transform:
     train: train_classify_replay_tf
     val: test_classify_tf
     test: test_classify_tf
@@ -37,7 +37,7 @@ data_loader:
       shuffle: False
   test:
     args:
-      batch_size: 8
+      batch_size: 32
       num_workers: 8
       shuffle: False
 model:
@@ -49,11 +49,13 @@ model:
       name: ResnetFaceExtractor
       args:
         version: resnet50_flickr_face
+        from_pretrained: False
         freeze: False
     img_variant_encoder:
       name: ResnetFaceExtractor
       args:
         version: resnet50_flickr_face
+        from_pretrained: False
         freeze: False
 metric:
   - name: Accuracy
@@ -86,7 +88,7 @@ lr_scheduler:
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "double-resnetface-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
+      filename: "double-restnet-fafi-hybrid-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
       monitor: "val/eer"
       verbose: True
       save_top_k: 3
@@ -102,7 +104,3 @@ callbacks:
   - name: LearningRateMonitor
     args:
       logging_interval: step
-      
-
-
-

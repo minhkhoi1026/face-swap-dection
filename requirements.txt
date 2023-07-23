@@ -15,3 +15,5 @@ timm
 grad-cam
 streamlit
 altair
+albumentations
+loguru
