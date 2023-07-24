@@ -49,13 +49,13 @@ model:
       name: VitNetExtractor
       args:
         version: vit_tiny_patch16_224
-        from_pretrained: False
+        from_pretrained: True
         freeze: False
     img_variant_encoder:
       name: VitNetExtractor
       args:
         version: vit_tiny_patch16_224
-        from_pretrained: False
+        from_pretrained: True
         freeze: False
 metric:
   - name: Accuracy

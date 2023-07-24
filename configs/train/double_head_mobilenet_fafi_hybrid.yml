@@ -19,11 +19,11 @@ dataset:
     val:
       source_path: fsd-deepfakerapp/hybrid/val
       split_file: all_50.csv
-      oversampling: False
+      oversampling: True
     test:
       source_path: fsd-deepfakerapp/hybrid/test
       split_file: all_100.csv
-      oversampling: False
+      oversampling: True
 data_loader:
   train:
     args:
@@ -49,13 +49,13 @@ model:
       name: MobileNetExtractor
       args:
         version: mobilenetv3_small_100
-        from_pretrained: False
+        from_pretrained: True
         freeze: False
     img_variant_encoder:
       name: MobileNetExtractor
       args:
         version: mobilenetv3_small_100
-        from_pretrained: False
+        from_pretrained: True
         freeze: False
 metric:
   - name: Accuracy

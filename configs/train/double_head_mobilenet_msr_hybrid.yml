@@ -49,13 +49,13 @@ model:
       name: MobileNetExtractor
       args:
         version: mobilenetv3_small_100
-        from_pretrained: False
+        from_pretrained: True
         freeze: False
     img_variant_encoder:
       name: MobileNetExtractor
       args:
         version: mobilenetv3_small_100
-        from_pretrained: False
+        from_pretrained: True
         freeze: False
 metric:
   - name: Accuracy
