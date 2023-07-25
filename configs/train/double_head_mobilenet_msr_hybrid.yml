@@ -4,7 +4,7 @@ global:
   run_name: double-mobilenetv3_small_100-msr-hybrid
   save_dir: logs
   SEED: 47
-  resume: Null
+  resume: logs/hcmus-fsd/k541loh7/checkpoints/double-mobilenet-fafi-hybrid-epoch=26-val_eer=0.0553-val_acc=0.9379.ckpt # alpha = 0.75
 dataset:
   name: FaceSpoofingDataset
   transform:

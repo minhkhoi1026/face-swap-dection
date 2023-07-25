@@ -13,6 +13,7 @@ from src.utils.opt import Opts
 from src.model import MODEL_REGISTRY
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.utilities import rank_zero_only
 import datetime
 
 def nested_children(m: torch.nn.Module):
@@ -44,12 +45,16 @@ def check(cfg):
         save_dir=cfg["global"]["save_dir"],
         entity=cfg["global"]["username"],
     )
-    wandb_logger.experiment.config.update(cfg)
+    # only save on rank-0 process if run on multiple GPUs
+    # https://github.com/Lightning-AI/lightning/issues/13166
+    if rank_zero_only.rank == 0:
+        wandb_logger.experiment.config.update(cfg)
+        
     trainer = pl.Trainer(
-        gpus=-1
+        gpus=1
         if torch.cuda.device_count() else None,  # Use all gpus available
-        strategy="ddp" if torch.cuda.device_count() > 1 else None,
-        sync_batchnorm=True if torch.cuda.device_count() > 1 else False,
+        # strategy="ddp" if torch.cuda.device_count() > 1 else None,
+        # sync_batchnorm=True if torch.cuda.device_count() > 1 else False,
         logger=wandb_logger,
     )
     # import json

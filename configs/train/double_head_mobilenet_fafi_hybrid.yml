@@ -4,7 +4,7 @@ global:
   run_name: double-mobilenetv3_small_100-fafi-hybrid
   save_dir: logs
   SEED: 47
-  resume: Null
+  resume: logs/hcmus-fsd/3pcrh64m/checkpoints/double-mobilenet-fafi-hybrid-epoch=20-val_eer=0.0405-val_acc=0.9536.ckpt # alpha = 0.75
 dataset:
   name: FaceVariantSpoofingDataset
   transform:
@@ -19,11 +19,11 @@ dataset:
     val:
       source_path: fsd-deepfakerapp/hybrid/val
       split_file: all_50.csv
-      oversampling: True
+      oversampling: False
     test:
       source_path: fsd-deepfakerapp/hybrid/test
       split_file: all_100.csv
-      oversampling: True
+      oversampling: False
 data_loader:
   train:
     args:

@@ -18,4 +18,9 @@ conda activate fsd
 
 pip install .
 
-python src/test.py -c configs/double_head.yml
+python src/test.py -c configs/train/double_head_vit_msr_hybrid.yml
+# python src/test.py -c configs/train/double_head_vit_fafi_hybrid.yml
+# python src/test.py -c configs/train/double_head_mobilenet_msr_hybrid.yml
+# python src/test.py -c configs/train/double_head_mobilenet_fafi_hybrid.yml
+python src/test.py -c configs/train/double_head_restnet_msr_hybrid.yml
+python src/test.py -c configs/train/double_head_restnet_fafi_hybrid.yml

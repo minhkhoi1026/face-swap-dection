@@ -4,7 +4,8 @@ global:
   run_name: double-resnet50_flickr_face-msr-hybrid
   save_dir: logs
   SEED: 47
-  resume: Null
+  resume: logs/hcmus-fsd/sv0zddko/checkpoints/double-restnet-msr-hybrid-epoch=14-val_eer=0.0281-val_acc=0.9596.ckpt # alpha = 0.5
+  # resume: logs/hcmus-fsd/kjwgxog3/checkpoints/double-restnet-msr-hybrid-epoch=2-val_eer=0.0087-val_acc=0.9661.ckpt # alpha = 0.75
 dataset:
   name: FaceSpoofingDataset
   transform:
@@ -49,13 +50,11 @@ model:
       name: ResnetFaceExtractor
       args:
         version: resnet50_flickr_face
-        from_pretrained: True
         freeze: False
     img_variant_encoder:
       name: ResnetFaceExtractor
       args:
         version: resnet50_flickr_face
-        from_pretrained: True
         freeze: False
 metric:
   - name: Accuracy
@@ -88,7 +87,7 @@ lr_scheduler:
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "double-restnet-msr-hybrid-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
+      filename: "double-resnet-msr-hybrid-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
       monitor: "val/eer"
       verbose: True
       save_top_k: 3
