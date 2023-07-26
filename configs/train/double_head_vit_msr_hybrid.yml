@@ -4,8 +4,7 @@ global:
   run_name: double-vit_tiny_patch16_224-msr-hybrid
   save_dir: logs
   SEED: 47
-  resume: logs/hcmus-fsd/3ch8424w/checkpoints/double-vit-msr-hybrid-epoch=0-val_eer=0.0420-val_acc=0.9472.ckpt # alpha = 0.5
-  # resume: logs/hcmus-fsd/w4hu01su/checkpoints/double-vit-msr-hybrid-epoch=7-val_eer=0.0379-val_acc=0.9567.ckpt # alpha = 0.75
+  resume: Null
 dataset:
   name: FaceSpoofingDataset
   transform:

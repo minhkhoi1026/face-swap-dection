@@ -1,10 +1,10 @@
 global:
   username: rainbow-dango
   project_name: hcmus-fsd
-  run_name: double-vit_tiny_patch16_224-fafi-hybrid
+  run_name: double-resnet50_flickr_face-fafi-hybrid
   save_dir: logs
   SEED: 47
-  resume: Null
+  resume: logs/hcmus-fsd/wkblc1ev/checkpoints/double-restnet-fafi-hybrid-epoch=10-val_eer=0.0164-val_acc=0.9722.ckpt # alpha = 0.75
 dataset:
   name: FaceVariantSpoofingDataset
   transform:
@@ -46,16 +46,14 @@ model:
   num_classes: 2
   extractor:
     img_encoder:
-      name: VitNetExtractor
+      name: ResnetFaceExtractor
       args:
-        version: vit_tiny_patch16_224
-        from_pretrained: True
+        version: resnet50_flickr_face
         freeze: False
     img_variant_encoder:
-      name: VitNetExtractor
+      name: ResnetFaceExtractor
       args:
-        version: vit_tiny_patch16_224
-        from_pretrained: True
+        version: resnet50_flickr_face
         freeze: False
 metric:
   - name: Accuracy
@@ -88,7 +86,7 @@ lr_scheduler:
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "double-vit-fafi-hybrid-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
+      filename: "double-resnet-fafi-hybrid-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
       monitor: "val/eer"
       verbose: True
       save_top_k: 3

@@ -4,8 +4,7 @@ global:
   run_name: double-resnet50_flickr_face-msr-hybrid
   save_dir: logs
   SEED: 47
-  resume: logs/hcmus-fsd/sv0zddko/checkpoints/double-restnet-msr-hybrid-epoch=14-val_eer=0.0281-val_acc=0.9596.ckpt # alpha = 0.5
-  # resume: logs/hcmus-fsd/kjwgxog3/checkpoints/double-restnet-msr-hybrid-epoch=2-val_eer=0.0087-val_acc=0.9661.ckpt # alpha = 0.75
+  resume: Null
 dataset:
   name: FaceSpoofingDataset
   transform:
