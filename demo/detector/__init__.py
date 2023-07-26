@@ -5,9 +5,11 @@ DETECTOR_REGISTRY = Registry("DETECTOR")
 
 from demo.detector.resnet_detector import ResNetDetector
 from demo.detector.vit_detector import ViTDetector
+from demo.detector.mobilenet_detector import MobileNetDetector
 
 DETECTOR_REGISTRY.register(ResNetDetector)
 DETECTOR_REGISTRY.register(ViTDetector)
+DETECTOR_REGISTRY.register(MobileNetDetector)
 
 class DetectorFactory:
     def __init__(self, cfg_path="configs/demo/detector_registry_config.yml"):

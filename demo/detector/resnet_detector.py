@@ -11,13 +11,13 @@ from src.utils.opt import Config
 from src.model import MODEL_REGISTRY
 from demo.extractor.frame_extractor import FrameExtractor
 from demo.extractor.face_fafi_extractor import FaceFAFIExtractor
-from demo.utils.gradcam import show_cam_on_image, GradCAMCompatibleModel
+from demo.utils.gradcam import GradCAMCompatibleModel
 from demo.detector.lightning_detector import TorchLightningDetector
 
 class ResNetDetector(TorchLightningDetector):
     def __init__(self,
                  name, 
-                 cfg_path: str="configs/double_head_resnet_infer.yml",
+                 cfg_path: str="configs/inference/double_head_resnet_fafi_hybrid.yml",
                  frame_width=1280,
                  frame_height=720,
                  thickness_percentage=10, 
@@ -57,19 +57,19 @@ class ResNetDetector(TorchLightningDetector):
     
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    import seaborn as sns
+    from pytorch_grad_cam.utils.image import show_cam_on_image
     
-    detector = ResNetDetector()
-    x = detector.predict(open("data_verify/200_ntthau.mp4", "rb").read())
+    detector = ResNetDetector("resnet")
+    x = detector.predict(open("data_verify/007_132.mp4", "rb").read())
     
-    image_path= x.iloc[0]["frame_path"]
-    bbox = x.iloc[0]["predict"][0]["bbox"]
+    image_path= x.iloc[0]["predict"][0]["face_path"]
     grayscale_cam = x.iloc[0]["predict"][0]["grad_cam"]
     print(grayscale_cam.shape)
-    rgb_img = cv2.imread(image_path, 1)
+    rgb_img = cv2.imread(image_path, 1)[:, :, ::-1]
+    rgb_img = cv2.resize(rgb_img, (224, 224))
     rgb_img = np.float32(rgb_img) / 255
-    cam_image = show_cam_on_image(rgb_img, grayscale_cam, bbox)
+    
+    cam_image = show_cam_on_image(rgb_img, grayscale_cam)
     cv2.imwrite(f'detector_cam_resnet.jpg', cam_image)
 
     
