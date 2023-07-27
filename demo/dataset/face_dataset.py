@@ -11,11 +11,12 @@ cv2.setNumThreads(0)
 from albumentations.pytorch.transforms import ToTensorV2
 
 from src.utils.loading import load_image_variant_label
+from src.utils.retinex import automatedMSRCR
 from . import DATASET_REGISTRY
 
 
 @DATASET_REGISTRY.register()
-class MsrDataset(torch.utils.data.Dataset):
+class FaceSpoofingDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         image_paths: list,

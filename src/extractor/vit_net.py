@@ -1,4 +1,5 @@
 import timm
+import torch.nn as nn
 from . import EXTRACTOR_REGISTRY
 from src.extractor.base_extractor import ExtractorNetwork
 
@@ -6,7 +7,7 @@ from src.extractor.base_extractor import ExtractorNetwork
 @EXTRACTOR_REGISTRY.register()
 class VitNetExtractor(ExtractorNetwork):
 
-    def __init__(self, version, in_channels=3, from_pretrained=True, freeze=False):
+    def __init__(self, version, in_channels=3, from_pretrained=True, freeze=False, truncated=False):
         super().__init__()
         available_versions = [
             'vit_tiny_patch16_224',
@@ -30,6 +31,11 @@ class VitNetExtractor(ExtractorNetwork):
         self.extractor = timm.create_model(version,
                                             pretrained=from_pretrained,
                                             in_chans=in_channels)
+        if truncated:
+            n = len(self.extractor.blocks)
+            for i in range(n//2, n):
+                self.extractor.blocks[i] = nn.Identity()
+                
         self.feature_dim = self.extractor.num_features  # num_features for consistency with other models
         if freeze:
             self.freeze()

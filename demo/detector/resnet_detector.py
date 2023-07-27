@@ -57,10 +57,16 @@ class ResNetDetector(TorchLightningDetector):
     
 
 if __name__ == "__main__":
+    import argparse
     from pytorch_grad_cam.utils.image import show_cam_on_image
     
-    detector = ResNetDetector("resnet")
-    x = detector.predict(open("data_verify/007_132.mp4", "rb").read())
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--feature', choices=['msr', 'fafi'])
+    feature = parser.parse_args().feature
+
+    cfg = "configs/inference/double_head_resnet_{}_hybrid.yml".format(feature)
+    detector = ResNetDetector("resnet",cfg)
+    x = detector.predict(open("data_verify/200_ntthau.mp4", "rb").read())
     
     image_path= x.iloc[0]["predict"][0]["face_path"]
     grayscale_cam = x.iloc[0]["predict"][0]["grad_cam"]
@@ -70,7 +76,7 @@ if __name__ == "__main__":
     rgb_img = np.float32(rgb_img) / 255
     
     cam_image = show_cam_on_image(rgb_img, grayscale_cam)
-    cv2.imwrite(f'detector_cam_resnet.jpg', cam_image)
+    cv2.imwrite(f'detector_cam_resnet_{feature}.jpg', cam_image)
 
     
     

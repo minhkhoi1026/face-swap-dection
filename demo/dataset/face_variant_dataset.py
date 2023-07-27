@@ -15,7 +15,7 @@ from . import DATASET_REGISTRY
 
 
 @DATASET_REGISTRY.register()
-class FafiDataset(torch.utils.data.Dataset):
+class FaceVariantSpoofingDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         image_paths: list,

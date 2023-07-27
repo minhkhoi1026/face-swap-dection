@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from src.utils.opt import Config
 from src.model import MODEL_REGISTRY
 from src.augmentation import TRANSFORM_REGISTRY
+from demo.dataset import DATASET_REGISTRY
 from src.dataset.demo_dataset import DemoDataset
 from demo.detector.base_detector import BaseDetector
 from demo.extractor.frame_extractor import FrameExtractor
@@ -66,7 +67,7 @@ class TorchLightningDetector(BaseDetector):
                 face_paths.append(face)
                 fafi_paths.append(fafi)
         
-        dataset = DemoDataset(
+        dataset = DATASET_REGISTRY.get(cfg["dataset"]["name"])(
             img_transform=image_transform_test,
             img_normalize=img_normalize,
             image_paths=face_paths,
