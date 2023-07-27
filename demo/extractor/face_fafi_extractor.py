@@ -39,8 +39,9 @@ class FaceFAFIExtractor(BaseExtractor):
             listY = [int(y) for x,y in face]
             face_size = max(listY) - min(listY)
 
-            thickness = int(face_size * self.thickness_percentage / 100)
-            blur = int(face_size * self.blur_percentage / 100)
+            thickness = np.max([int(face_size * self.thickness_percentage / 100), 1])
+            
+            blur = np.max([int(face_size * self.blur_percentage / 100), 1])
 
             for key, value in self.pred_types.items():
                 cur_landmarks = face[value].tolist()

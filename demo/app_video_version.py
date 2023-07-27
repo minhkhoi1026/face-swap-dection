@@ -12,6 +12,7 @@ from components.chart import (
 )
 from components.frame import visualize_frame_prediction_st, visualize_video_prediction
 from demo.detector import DETECTOR_FACTORY
+from demo.utils.video import get_video_frame_rate
 from enum import Enum
 
 class ANALYZE_MODE(str, Enum):
@@ -59,7 +60,7 @@ def main():
     selected_model = input_form.multiselect("Choose all detector you want", model_list)
     
     with input_form.expander("Advanced settings"):
-        sampling_ratio = st.slider("Sampling ratio", min_value=0.0, max_value=1.0, value=0.1, step=0.1)
+        sampling_ratio = st.slider("Sampling ratio", min_value=0.0, max_value=1.0, value=0.1, step=0.05)
         sampling = int(1 / sampling_ratio)
     
     submitted = input_form.form_submit_button("Submit")
@@ -73,6 +74,7 @@ def main():
     if uploaded_file and selected_model:
         # get prediction data
         video_bytes = uploaded_file.read()
+        
         model_predictions = get_predictions(video_bytes, selected_model, sampling)
         
         # overall result
@@ -87,7 +89,7 @@ def main():
         st.subheader("Detail investigation")
         choose_model = st.selectbox("Choose a model you want to investigate", selected_model, index=0)
         
-        if choose_model:
+        if choose_model:            
             frame_data = model_predictions[model_predictions["model"] == choose_model]["frame_predictions"].iloc[0]
         
             # area chart
@@ -101,9 +103,15 @@ def main():
             analyze_mode = st.selectbox("Which type of data you want to analyze?", analyze_modes, index=0)
             
             if (analyze_mode == ANALYZE_MODE.VIDEO):
+                with tempfile.NamedTemporaryFile(suffix='.mp4') as temp_file:
+                    temp_file.write(video_bytes)
+                    frame_rate = int(get_video_frame_rate(temp_file.name) * sampling_ratio)
                 # video visualization
                 is_show_gradcam = st.checkbox("Click for hint of fake region", value=False)
-                video_path = visualize_video_prediction(frame_data, fake_label=1, is_show_gradcam=is_show_gradcam)
+                video_path = visualize_video_prediction(frame_data, 
+                                                        fake_label=1, 
+                                                        frame_rate=frame_rate, 
+                                                        is_show_gradcam=is_show_gradcam)
                 with open(video_path, "rb") as video:
                     st.video(video, format="video/mp4", start_time=0)
             elif (analyze_mode == ANALYZE_MODE.FRAME):

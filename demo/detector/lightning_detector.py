@@ -35,6 +35,7 @@ class TorchLightningDetector(BaseDetector):
         
         self.cfg = Config(cfg_path)
         self.model = self.create_detector_model(self.cfg)
+        self.model.eval().to(self.device)
         self.grad_cam_model, self.cam = self.create_gradcam_model(self.cfg)
         
     def create_detector_model(self, cfg):
@@ -52,7 +53,6 @@ class TorchLightningDetector(BaseDetector):
     
     def _eval(self, frame_infos):
         cfg = self.cfg
-        self.model.eval().to(self.device)
         
         image_size = cfg["model"]["input_size"]
         image_transform_test = TRANSFORM_REGISTRY.get(cfg["dataset"]["transform"]["test"])(
@@ -98,6 +98,8 @@ class TorchLightningDetector(BaseDetector):
                 all_logits.extend(logits.tolist())
                 all_grad_cam.extend(self.get_grad_cam(batch))
                 
+                del batch
+                
             except StopIteration:
                 break
 
@@ -115,7 +117,7 @@ class TorchLightningDetector(BaseDetector):
         for frame_info in frame_infos:
             frame_info["predict"] = self.face_extractor.extract(frame_info["frame_path"])
         return frame_infos
-    
+
     def predict(self, video_bytes: bytes, sampling: int=10):
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(video_bytes)

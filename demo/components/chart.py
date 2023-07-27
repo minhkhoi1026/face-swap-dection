@@ -1,15 +1,11 @@
-import streamlit as st
 import pandas as pd
 import altair as alt
-import typing
-import numpy as np
-import cv2
-import tempfile
-import os
 
 
 def create_overall_result_chart(data: pd.DataFrame):
     data["predict_text"] = data["predict"].astype(str) + "%"
+    print(data["predict"])
+    print(data["predict_text"])
     chart = alt.Chart(data).encode(
         x=alt.X(
             "predict:Q",
