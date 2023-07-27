@@ -49,10 +49,16 @@ class ViTDetector(TorchLightningDetector):
     
 
 if __name__ == "__main__":
+    import argparse
     from pytorch_grad_cam.utils.image import show_cam_on_image
     
-    detector = ViTDetector("vit", "configs/inference/double_head_vit_fafi_hybrid.yml")
-    x = detector.predict(open("data_verify/007_132.mp4", "rb").read())
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--feature', choices=['msr', 'fafi'])
+    feature = parser.parse_args().feature
+
+    cfg = f"configs/inference/double_head_vit_{feature}_hybrid.yml"
+    detector = ViTDetector("vit", cfg)
+    x = detector.predict(open("data_verify/200_ntthau.mp4", "rb").read())
     
     image_path= x.iloc[0]["predict"][0]["face_path"]
     grayscale_cam = x.iloc[0]["predict"][0]["grad_cam"]
@@ -62,6 +68,6 @@ if __name__ == "__main__":
     rgb_img = np.float32(rgb_img) / 255
     
     cam_image = show_cam_on_image(rgb_img, grayscale_cam)
-    cv2.imwrite(f'detector_cam_vit.jpg', cam_image)
+    cv2.imwrite(f'detector_cam_vit_{feature}.jpg', cam_image)
 
     

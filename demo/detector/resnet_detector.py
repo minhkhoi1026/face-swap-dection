@@ -64,7 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--feature', choices=['msr', 'fafi'])
     feature = parser.parse_args().feature
 
-    cfg = "configs/inference/double_head_resnet_{}_hybrid.yml".format(feature)
+    cfg = f"configs/inference/double_head_resnet_{feature}_hybrid.yml"
     detector = ResNetDetector("resnet",cfg)
     x = detector.predict(open("data_verify/200_ntthau.mp4", "rb").read())
     

@@ -57,9 +57,15 @@ class MobileNetDetector(TorchLightningDetector):
     
 
 if __name__ == "__main__":
+    import argparse
     from pytorch_grad_cam.utils.image import show_cam_on_image
     
-    detector = MobileNetDetector("mobilenet")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--feature', choices=['msr', 'fafi'])
+    feature = parser.parse_args().feature
+
+    cfg = "configs/inference/double_head_mobilenet_{}_hybrid.yml".format(feature)
+    detector = MobileNetDetector("mobilenet", cfg)
     x = detector.predict(open("data_verify/200_ntthau.mp4", "rb").read())
     
     image_path= x.iloc[0]["predict"][0]["face_path"]
@@ -70,7 +76,7 @@ if __name__ == "__main__":
     rgb_img = np.float32(rgb_img) / 255
     
     cam_image = show_cam_on_image(rgb_img, grayscale_cam)
-    cv2.imwrite(f'detector_cam_mobilenet.jpg', cam_image)
+    cv2.imwrite(f'detector_cam_mobilenet_{feature}.jpg', cam_image)
 
     
     
