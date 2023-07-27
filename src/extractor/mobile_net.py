@@ -14,7 +14,6 @@ class MobileNetExtractor(ExtractorNetwork):
                               'mobilenetv3_small_050', 
                               'mobilenetv3_small_075', 
                               'mobilenetv3_small_100']
-        print(version)
         assert version in available_versions, f"version must be one of available_versions"
         self.extractor = timm.create_model(version, pretrained=from_pretrained, in_chans=in_channels)
         self.feature_dim = self.extractor.num_features  # num_features for consistency with other models
