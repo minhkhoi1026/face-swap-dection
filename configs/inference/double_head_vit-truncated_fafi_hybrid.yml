@@ -4,7 +4,7 @@ global:
   run_name: double-vit_tiny_patch16_224_truncated-fafi-hybrid
   save_dir: logs
   SEED: 47
-  resume: Null
+  resume: logs/hcmus-fsd/05n39iie/checkpoints/double-vit-fafi-hybrid-epoch=10-val_eer=0.0330-val_acc=0.9554.ckpt
 dataset:
   name: FaceVariantSpoofingDataset
   transform:

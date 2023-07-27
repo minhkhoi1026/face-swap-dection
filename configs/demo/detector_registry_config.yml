@@ -23,4 +23,8 @@ detectors:
     args:
       name: 'Roop Detector - MobileNet - MSR'
       cfg_path: 'configs/inference/double_head_mobilenet_msr_hybrid.yml'
+  - class: ViTDetector
+    args:
+      name: 'Roop Detector - ViT truncated - FAFI'
+      cfg_path: 'configs/inference/double_head_vit_fafi_hybrid.yml'
     
