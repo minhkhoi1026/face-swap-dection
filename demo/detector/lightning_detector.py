@@ -35,14 +35,14 @@ class TorchLightningDetector(BaseDetector):
         
         self.cfg = Config(cfg_path)
         self.model = self.create_detector_model(self.cfg)
-        self.model.eval().to(self.device)
+        self.model.eval()
         self.grad_cam_model, self.cam = self.create_gradcam_model(self.cfg)
         
     def create_detector_model(self, cfg):
         model = MODEL_REGISTRY.get(cfg.model["name"])(cfg)
         return model.load_from_checkpoint(cfg['global']['resume'],
                                         cfg=cfg,
-                                        strict=True)
+                                        strict=True).cpu()
     
     @abc.abstractmethod
     def create_gradcam_model(self, cfg):
@@ -52,6 +52,7 @@ class TorchLightningDetector(BaseDetector):
         return []
     
     def _eval(self, frame_infos):
+        self.model.to(self.device)
         cfg = self.cfg
         
         image_size = cfg["model"]["input_size"]
@@ -91,11 +92,11 @@ class TorchLightningDetector(BaseDetector):
                 for key in batch:
                     if key in ["imgs","img_variants"]:
                         batch[key] = batch[key].to(self.device)
-                
-                logits = self.model(batch)['logits']
+                with torch.no_grad():
+                    logits = self.model(batch)['logits']
                 logits = F.softmax(logits)[:, 1]
                 
-                all_logits.extend(logits.tolist())
+                all_logits.extend(logits.cpu().tolist())
                 all_grad_cam.extend(self.get_grad_cam(batch))
                 
                 del batch
@@ -110,6 +111,8 @@ class TorchLightningDetector(BaseDetector):
                 data["score"] = all_logits[idx] * 100 # to percentage
                 idx += 1
 
+        self.model.cpu()
+        
         return frame_infos
     
     def extract_data(self, video_path: str, sampling):
