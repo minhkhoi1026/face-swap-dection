@@ -4,7 +4,7 @@ from torch import nn
 
 from src.extractor import EXTRACTOR_REGISTRY
 from src.model.abstract import AbstractModel
-from src.loss.focal_loss import FocalLoss
+from src.loss import LOSS_REGISTRY
 from src.model.feat_attention import FeatAttention
 
 class DoubleHeadAttentionFrameClassifier(AbstractModel):
@@ -18,7 +18,9 @@ class DoubleHeadAttentionFrameClassifier(AbstractModel):
         
         self.mlp = nn.Linear(embed_dim, self.cfg["model"]["num_classes"])
 
-        self.loss = FocalLoss(num_classes=self.cfg["model"]["num_classes"])
+        self.loss = LOSS_REGISTRY.get(self.cfg["loss"]["name"])(
+            **self.cfg["loss"]["args"]
+        )
         
     def forward(self, batch):
         # dim=1 means concatenate along the channel dimension

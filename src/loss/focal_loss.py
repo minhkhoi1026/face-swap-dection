@@ -1,7 +1,8 @@
 import torch.nn as nn
 from torchvision.ops.focal_loss import sigmoid_focal_loss
+from . import LOSS_REGISTRY
 
-
+@LOSS_REGISTRY.register()
 class FocalLoss(nn.Module):
     def __init__(self, num_classes, alpha=0.75, gamma=2, reduction='mean'):
         super().__init__()

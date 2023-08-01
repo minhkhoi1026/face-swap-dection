@@ -1,30 +1,30 @@
 detectors:
   - class: ResNetDetector
     args:
-      name: 'Roop Detector - ResNet - FAFI'
+      name: 'Hybrid Detector - ResNet - FAFI'
       cfg_path: 'configs/inference/double_head_resnet_fafi_hybrid.yml'
   - class: ResNetDetector
     args:
-      name: 'Roop Detector - ResNet - MSR'
+      name: 'Hybrid Detector - ResNet - MSR'
       cfg_path: 'configs/inference/double_head_resnet_msr_hybrid.yml'
   - class: ViTDetector
     args:
-      name: 'Roop Detector - ViT - FAFI'
+      name: 'Hybrid Detector - ViT - FAFI'
       cfg_path: 'configs/inference/double_head_vit_fafi_hybrid.yml'
   - class: ViTDetector
     args:
-      name: 'Roop Detector - ViT - MSR'
+      name: 'Hybrid Detector - ViT - MSR'
       cfg_path: 'configs/inference/double_head_vit_msr_hybrid.yml'
   - class: MobileNetDetector
     args:
-      name: 'Roop Detector - MobileNet - FAFI'
+      name: 'Hybrid Detector - MobileNet - FAFI'
       cfg_path: 'configs/inference/double_head_mobilenet_fafi_hybrid.yml'
   - class: MobileNetDetector
     args:
-      name: 'Roop Detector - MobileNet - MSR'
+      name: 'Hybrid Detector - MobileNet - MSR'
       cfg_path: 'configs/inference/double_head_mobilenet_msr_hybrid.yml'
   - class: ViTDetector
     args:
-      name: 'Roop Detector - ViT truncated - FAFI'
+      name: 'Hybrid Detector - ViT truncated - FAFI'
       cfg_path: 'configs/inference/double_head_vit_fafi_hybrid.yml'
     

@@ -13,16 +13,16 @@ dataset:
     test: test_classify_tf
   args:
     train:
-      source_path: fsd-deepfakerapp/hybrid/train
-      split_file: all_50.csv
+      source_path: dataset_v1/imgs
+      split_file: train.csv
       oversampling: True
     val:
-      source_path: fsd-deepfakerapp/hybrid/val
-      split_file: all_50.csv
+      source_path: dataset_v1/imgs
+      split_file: val.csv
       oversampling: False
     test:
-      source_path: fsd-deepfakerapp/hybrid/test
-      split_file: all_100.csv
+      source_path: dataset_v1/imgs
+      split_file: test.csv
       oversampling: False
 data_loader:
   train:
@@ -75,6 +75,8 @@ trainer:
   log_interval: 20
   use_fp16: True
   debug: False
+  gpus: -1
+  deterministic: True
 optimizer:
   lr: 0.0001
 lr_scheduler:
@@ -104,3 +106,10 @@ callbacks:
   - name: LearningRateMonitor
     args:
       logging_interval: step
+loss:
+  name: FocalLoss
+  args:
+    num_classes: 2
+    alpha: 0.75
+    gamma: 2
+    reduction: 'mean'

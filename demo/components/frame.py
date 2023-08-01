@@ -13,3 +13,4 @@ def visualize_video_prediction(video_data, fake_label, frame_rate, is_show_gradc
     for _, frame_data in video_data.iterrows():
         frames.append(visualize_frame_prediction_st(frame_data, fake_label, is_show_gradcam))
     return create_video_from_frames(frames, frame_rate)
+

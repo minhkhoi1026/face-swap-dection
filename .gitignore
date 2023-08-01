@@ -2,6 +2,7 @@
 wandb/
 casia-fasd/
 data/
+dataset_v1/
 weights/
 logs/
 data_extract/

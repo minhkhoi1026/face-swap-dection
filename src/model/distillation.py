@@ -5,7 +5,7 @@ from torch import nn
 from src.extractor import EXTRACTOR_REGISTRY
 from src.model.abstract import MLP, AbstractModel
 from src.loss.distil_loss import DistillationLoss
-from src.loss.focal_loss import FocalLoss
+from src.loss import LOSS_REGISTRY
 
 
 class DistillationFrameClassifier(AbstractModel):
@@ -17,7 +17,9 @@ class DistillationFrameClassifier(AbstractModel):
         self.mlp = nn.Linear(self.img_extractor.feature_dim, self.cfg["model"]["num_classes"])
 
         self.distil_loss = DistillationLoss(**self.cfg["model"]["teacher_config"])
-        self.classfiy_loss = FocalLoss(self.cfg["model"]["num_classes"])
+        self.classfiy_loss = LOSS_REGISTRY.get(self.cfg["loss"]["name"])(
+            **self.cfg["loss"]["args"]
+        )
         self.alpha = self.cfg["model"]["alpha"]
         
     def forward(self, batch):

@@ -4,7 +4,7 @@ from torch import nn
 
 from src.extractor import EXTRACTOR_REGISTRY
 from src.model.abstract import MLP, AbstractModel
-from src.loss.focal_loss import FocalLoss
+from src.loss import LOSS_REGISTRY
 
 
 class SingleHeadFrameClassifier(AbstractModel):
@@ -15,7 +15,9 @@ class SingleHeadFrameClassifier(AbstractModel):
         )
         self.mlp = nn.Linear(self.img_extractor.feature_dim, self.cfg["model"]["num_classes"])
 
-        self.loss = FocalLoss(num_classes=self.cfg["model"]["num_classes"])
+        self.loss = LOSS_REGISTRY.get(self.cfg["loss"]["name"])(
+            **self.cfg["loss"]["args"]
+        )
         
     def forward(self, batch):
         img_batch = batch["imgs"]

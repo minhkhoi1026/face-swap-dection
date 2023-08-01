@@ -10,11 +10,11 @@ def create_overall_result_chart(data: pd.DataFrame):
         x=alt.X(
             "predict:Q",
             scale=alt.Scale(domain=[0, 100]),
-            axis=alt.Axis(title="Real Level", labelFontSize=12, labelFontWeight="bold"),
+            axis=alt.Axis(title="Fake score", labelFontSize=16, labelFontWeight="bold"),
         ),
         y=alt.Y(
             "model:N",
-            axis=alt.Axis(title="Model Name", labelFontSize=12, labelFontWeight="bold"),
+            axis=alt.Axis(title="", labelFontSize=16, labelFontWeight="bold", labelLimit=300),
         ),
         text=alt.Text(
             "predict_text:N",
@@ -38,7 +38,7 @@ def create_overall_result_chart(data: pd.DataFrame):
     ) + chart.mark_text(
         align="left",
         dx=3,
-        fontSize=14,  # Set the font size of the labels
+        fontSize=20,  # Set the font size of the labels
         fontWeight="bold",  # Set the font weight of the labels
         color="black",
     )
@@ -53,13 +53,13 @@ def create_frame_detail_result_chart(data):
             "frame_id",
             scale=alt.Scale(domain=[0, max_frame_id]),
             axis=alt.Axis(
-                title="Frame number", labelFontSize=12, labelFontWeight="bold"
+                title="Frame number", labelFontSize=20, labelFontWeight="bold"
             ),
         ),
         y=alt.Y(
             "predict",
             scale=alt.Scale(domain=[0, 100]),
-            axis=alt.Axis(title="Real level", labelFontSize=12, labelFontWeight="bold"),
+            axis=alt.Axis(title="Fake score", labelFontSize=20, labelFontWeight="bold"),
         ),
     )
     area_chart = area_chart.mark_area(

@@ -48,6 +48,7 @@ class TorchLightningDetector(BaseDetector):
     def create_gradcam_model(self, cfg):
         return None, None
     
+    @abc.abstractmethod
     def get_grad_cam(self, batch):
         return []
     
