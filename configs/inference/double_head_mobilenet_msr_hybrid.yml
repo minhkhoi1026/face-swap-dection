@@ -75,6 +75,8 @@ trainer:
   log_interval: 20
   use_fp16: True
   debug: False
+  gpus: -1
+  deterministic: False
 optimizer:
   lr: 0.0001
 lr_scheduler:
@@ -104,3 +106,10 @@ callbacks:
   - name: LearningRateMonitor
     args:
       logging_interval: step
+loss:
+  name: FocalLoss
+  args:
+    num_classes: 2
+    alpha: 0.75
+    gamma: 2
+    reduction: 'mean'

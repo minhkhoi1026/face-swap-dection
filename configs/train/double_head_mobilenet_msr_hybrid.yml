@@ -4,7 +4,7 @@ global:
   run_name: double-mobilenetv3_small_100-msr-hybrid
   save_dir: logs
   SEED: 47
-  resume: null
+  resume: Null
 dataset:
   name: FaceSpoofingDataset
   transform:

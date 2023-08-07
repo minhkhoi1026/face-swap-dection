@@ -1,25 +1,35 @@
 import cv2
 import tempfile
 import subprocess
-from demo.utils.gradcam import show_cam_on_image
+from demo.utils.gradcam import show_cam_on_image, show_cams_on_image
 
 def visualize_frame_prediction(frame_data, fake_label, is_show_gradcam=False):
     image = cv2.imread(frame_data["frame_path"])
+        
+    if is_show_gradcam:
+        masks = list()
+        for pred in frame_data["predict"]:
+            x, y, p, q = pred["bbox"]
+            score = pred["score"]
+            
+            scale = score / 100 # linear scale
+            gradcam = pred["grad_cam"] * scale
+            bbox = (x, y, p, q)
+            
+            masks.append((gradcam, bbox))
+
+        image = show_cams_on_image(image / 255, masks, image_weight=0.4)
+        
     for pred in frame_data["predict"]:
         x, y, p, q = pred["bbox"]
         score = pred["score"]
-        
-        if is_show_gradcam:
-            gradcam = pred["grad_cam"] # * score / 100
-            bbox = (x, y, p, q)
-            image = show_cam_on_image(image / 255, gradcam, bbox)
-        
+
         # Determine the color based on the score
         colors = [(0, 255, 0), # Green 
                   (0, 0, 255), # Red
                   (0, 255, 255) # Yellow
                 ]
-        color_id = fake_label & (0 if score < 40 else 1 if score > 60 else 2)
+        color_id = 2 if (30 < score < 70) else (fake_label & (0 if score < 50 else 1))
         color = colors[color_id]
             
         # Draw the bbox on the image

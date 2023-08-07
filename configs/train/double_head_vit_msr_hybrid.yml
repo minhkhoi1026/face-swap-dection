@@ -75,7 +75,7 @@ trainer:
   log_interval: 20
   use_fp16: True
   debug: False
-  gpus: -1
+  gpus: [1]
   deterministic: True
 optimizer:
   lr: 0.0001

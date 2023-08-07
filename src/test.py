@@ -51,7 +51,7 @@ def check(cfg):
         wandb_logger.experiment.config.update(cfg)
         
     trainer = pl.Trainer(
-        gpus=1
+        gpus=cfg["trainer"]["gpus"]
         if torch.cuda.device_count() else None,  # Use all gpus available
         # strategy="ddp" if torch.cuda.device_count() > 1 else None,
         # sync_batchnorm=True if torch.cuda.device_count() > 1 else False,

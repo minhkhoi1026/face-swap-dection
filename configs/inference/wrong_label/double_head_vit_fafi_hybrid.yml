@@ -4,7 +4,7 @@ global:
   run_name: double-vit_tiny_patch16_224-fafi-hybrid
   save_dir: logs
   SEED: 47
-  resume: Null
+  resume: logs/hcmus-fsd/c7q7x7qu/checkpoints/double-vit-fafi-hybrid-epoch=1-val_eer=0.0277-val_acc=0.9682.ckpt
 dataset:
   name: FaceVariantSpoofingDataset
   transform:
@@ -75,7 +75,7 @@ trainer:
   log_interval: 20
   use_fp16: True
   debug: False
-  gpus: 1
+  gpus: 2
   deterministic: False
 optimizer:
   lr: 0.0001

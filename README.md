@@ -29,18 +29,29 @@ Training and testing images are stored in test and train folders respectively. T
 videos
 
 ```
-    train
-	    └── real
-	    	    └── real1.jpg
-	    	    .
-	    	    .
-	    └── fake
-	    	    └── fake1.jpg
-	    	    .
-	    	    .
-    test
-	    └── real
-	    └── fake
+dataset_v1/
+|-- videos/
+    |-- deepfaker/
+        |-- real/
+        |-- fake/
+    |-- roop/
+        |-- real/
+        |-- fake/
+|-- imgs/
+    |-- deepfaker/
+        |-- landmark/
+            |-- real/
+            |-- fake/
+        |-- face/
+            |-- real/
+            |-- fake/
+    |-- roop/
+        |-- landmark/
+            |-- real/
+            |-- fake/
+        |-- face/
+            |-- real/
+            |-- fake/
 ```
 
 ## Extract data

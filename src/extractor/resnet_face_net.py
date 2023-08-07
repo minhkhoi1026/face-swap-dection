@@ -1,4 +1,5 @@
 # Code apdated by RainbowDango from https://github.com/tomas-gajarsky/facetorch/blob/main/conf/analyzer/predictor/embed/r50_vggface_1m.yaml
+from math import e
 from src.extractor import EXTRACTOR_REGISTRY
 import torch
 from src.extractor.base_extractor import ExtractorNetwork
@@ -27,12 +28,16 @@ class ResnetFaceExtractor(ExtractorNetwork):
             self.freeze()
 
     def get_model(self, version, weight_local_dir, in_channels):
-        assert version in self.version_to_drive_id.keys(), f"Version {version} not supported"
+        # model = timm.create_model(BASE_RESNET_NAME, in_chans=in_channels, pretrained=False)
         
-        model = timm.create_model(BASE_RESNET_NAME, in_chans=in_channels, pretrained=False)
-        
-        model_weights = self.get_weights(version, weight_local_dir)
-        model.load_state_dict(model_weights, strict=False)
+        if version in self.version_to_drive_id.keys():
+            model = timm.create_model(BASE_RESNET_NAME, in_chans=in_channels, pretrained=False)
+            model_weights = self.get_weights(version, weight_local_dir)
+            model.load_state_dict(model_weights, strict=False)
+        elif version == "resnet50":
+            model = timm.create_model(BASE_RESNET_NAME, in_chans=in_channels, pretrained=True)
+        else:
+            raise ValueError(f"Unknown version {version}")
         
         return model
     

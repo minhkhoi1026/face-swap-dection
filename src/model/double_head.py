@@ -5,6 +5,7 @@ from torch import nn
 from src.extractor import EXTRACTOR_REGISTRY
 from src.model.abstract import AbstractModel
 from src.loss import LOSS_REGISTRY
+from src.loss.focal_loss import FocalLoss
 from src.model.feat_attention import FeatAttention
 
 class DoubleHeadFrameClassifier(AbstractModel):

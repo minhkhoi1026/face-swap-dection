@@ -32,7 +32,6 @@ def train(config):
         CALLBACK_REGISTRY.get(mcfg["name"])(**mcfg["args"])
         for mcfg in config["callbacks"]
     ]
-    print(config["trainer"]["gpus"])
     trainer = pl.Trainer(
         default_root_dir=".",
         max_epochs=config["trainer"]["num_epochs"],
@@ -53,6 +52,8 @@ def train(config):
     )
 
     trainer.fit(model)
+
+    return wandb_logger.experiment.id
 
 
 if __name__ == "__main__":

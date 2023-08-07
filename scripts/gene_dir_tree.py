@@ -25,7 +25,7 @@ def generate_tree(folder_path, indent='', max_depth=None, current_depth=0):
 folder_path = 'dataset_v1'
 
 # Set the maximum depth limit (change it according to your requirement)
-max_depth = 3
+max_depth = 4
 
 # Call the function to generate the tree structure with the specified depth limit
 generate_tree(folder_path, max_depth=max_depth)

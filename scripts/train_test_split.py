@@ -42,7 +42,7 @@ def split_variant(source_path, sampling_ratio, hybrid):
                     if not os.path.exists(os.path.join(source_path,landmark_path)):
                         continue
                     source = "original" if "real" in file_path else "deepfaker" if "video" in file else "roop"
-                    ilabel = int("fake" in file_path)
+                    ilabel = int("real" not in file_path)
 
                     rows.append((file_path, landmark_path, ilabel, source))
                     if get_id_video(file_path) in val_id:

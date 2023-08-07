@@ -1,28 +1,28 @@
 global:
   username: rainbow-dango
   project_name: hcmus-fsd
-  run_name: double-vit_tiny_patch16_224-fafi-hybrid
+  run_name: double-resnet50_imagenet-msr-hybrid
   save_dir: logs
   SEED: 47
-  resume: Null
+  resume: logs/hcmus-fsd/du051iht/checkpoints/double-resnet-fafi-hybrid-epoch=24-val_eer=0.0753-val_acc=0.9170.ckpt
 dataset:
-  name: FaceVariantSpoofingDataset
+  name: FaceSpoofingDataset
   transform:
     train: train_classify_replay_tf
     val: test_classify_tf
     test: test_classify_tf
   args:
     train:
-      source_path: dataset_v1/imgs
-      split_file: train.csv
+      source_path: fsd-deepfakerapp/hybrid/train
+      split_file: all_50.csv
       oversampling: True
     val:
-      source_path: dataset_v1/imgs
-      split_file: val.csv
+      source_path: fsd-deepfakerapp/hybrid/val
+      split_file: all_50.csv
       oversampling: False
     test:
-      source_path: dataset_v1/imgs
-      split_file: test.csv
+      source_path: fsd-deepfakerapp/hybrid/test
+      split_file: all_100.csv
       oversampling: False
 data_loader:
   train:
@@ -46,16 +46,14 @@ model:
   num_classes: 2
   extractor:
     img_encoder:
-      name: VitNetExtractor
+      name: ResnetFaceExtractor
       args:
-        version: vit_tiny_patch16_224
-        from_pretrained: True
+        version: resnet50
         freeze: False
     img_variant_encoder:
-      name: VitNetExtractor
+      name: ResnetFaceExtractor
       args:
-        version: vit_tiny_patch16_224
-        from_pretrained: True
+        version: resnet50
         freeze: False
 metric:
   - name: Accuracy
@@ -75,7 +73,7 @@ trainer:
   log_interval: 20
   use_fp16: True
   debug: False
-  gpus: 1
+  gpus: [1]
   deterministic: False
 optimizer:
   lr: 0.0001
@@ -90,7 +88,7 @@ lr_scheduler:
 callbacks:
   - name: ModelCheckpoint
     args:
-      filename: "double-vit-fafi-hybrid-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
+      filename: "double-resnet-fafi-hybrid-epoch={epoch}-val_eer={val/eer:.4f}-val_acc={val/accuracy:.4f}"
       monitor: "val/eer"
       verbose: True
       save_top_k: 3
