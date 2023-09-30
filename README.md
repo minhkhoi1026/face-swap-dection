@@ -20,6 +20,8 @@ pip install .
 ```
 
 ## Data
+Data are available at [Kaggle](https://www.kaggle.com/datasets/huynhngotrungtruc/faceswap-thesis).
+
 Training and testing images are stored in test and train folders respectively. The folder will be organised as such:
 videos
 
