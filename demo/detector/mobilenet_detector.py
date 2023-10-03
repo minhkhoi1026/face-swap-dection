@@ -66,9 +66,10 @@ if __name__ == "__main__":
 
     cfg = "configs/inference/double_head_mobilenet_{}_hybrid.yml".format(feature)
     detector = MobileNetDetector("mobilenet", cfg)
-    x = detector.predict(open("data_verify/200_ntthau.mp4", "rb").read())
+    x = detector.predict(open("dataset_v1/videos/roop/fake/080_nhlong.mp4", "rb").read(), sampling=200)
     
     image_path= x.iloc[0]["predict"][0]["face_path"]
+    print(image_path)
     grayscale_cam = x.iloc[0]["predict"][0]["grad_cam"]
     print(grayscale_cam.shape)
     rgb_img = cv2.imread(image_path, 1)[:, :, ::-1]

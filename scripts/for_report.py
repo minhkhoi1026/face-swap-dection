@@ -29,7 +29,12 @@ img_transform = Compose([
 #     dst_path = os.path.join(dst,file)
 #     cv2.imwrite(dst_path,t_image)
 
+
+
+
+
 frame = "data_verify/report/landmark-process/frame"
+face_crop = "data_verify/report/landmark-process/face_crop"
 face_landmark = "data_verify/report/landmark-process/face-landmark"
 landmark = "data_verify/report/landmark-process/landmark"
 dilate = "data_verify/report/landmark-process/dilate"
@@ -97,12 +102,14 @@ for file in os.listdir(frame):
     min_x = np.min(non_zero_pixels[1])
     max_x = np.max(non_zero_pixels[1])
 
+    face_crop_image = image[min_y:max_y+1, min_x:max_x+1]
     fl_image = fl_image[min_y:max_y+1, min_x:max_x+1]
     landmark_vis = landmark_vis[min_y:max_y+1, min_x:max_x+1]
     dilate_img = dilate_img[min_y:max_y+1, min_x:max_x+1]
     blurred_img = blurred_img[min_y:max_y+1, min_x:max_x+1]
     result_image = result_image[min_y:max_y+1, min_x:max_x+1]
 
+    cv2.imwrite(os.path.join(face_crop, file), face_crop_image)
     cv2.imwrite(os.path.join(face_landmark, file), fl_image)
     cv2.imwrite(os.path.join(landmark, file), landmark_vis)
     cv2.imwrite(os.path.join(dilate, file), dilate_img)

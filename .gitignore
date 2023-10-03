@@ -12,6 +12,9 @@ weights/
 logs/
 lightning_logs/
 src-old/
+img/
+imgs/
+*.zip
 
 # slurm
 slurm*
