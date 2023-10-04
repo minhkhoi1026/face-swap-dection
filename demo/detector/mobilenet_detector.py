@@ -62,11 +62,13 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--feature', choices=['msr', 'fafi'])
+    parser.add_argument('-v', '--video')
     feature = parser.parse_args().feature
+    video = parser.parse_args().video
 
     cfg = "configs/inference/double_head_mobilenet_{}_hybrid.yml".format(feature)
     detector = MobileNetDetector("mobilenet", cfg)
-    x = detector.predict(open("dataset_v1/videos/roop/fake/080_nhlong.mp4", "rb").read(), sampling=200)
+    x = detector.predict(open(video, "rb").read(), sampling=200)
     
     image_path= x.iloc[0]["predict"][0]["face_path"]
     print(image_path)

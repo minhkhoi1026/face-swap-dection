@@ -54,11 +54,13 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--feature', choices=['msr', 'fafi'])
+    parser.add_argument('-v', '--video')
     feature = parser.parse_args().feature
+    video = parser.parse_args().video
 
     cfg = f"configs/inference/double_head_vit_{feature}_hybrid.yml"
     detector = ViTDetector("vit", cfg)
-    x = detector.predict(open("data_verify/200_ntthau.mp4", "rb").read())
+    x = detector.predict(open(video, "rb").read())
     
     image_path= x.iloc[0]["predict"][0]["face_path"]
     grayscale_cam = x.iloc[0]["predict"][0]["grad_cam"]
