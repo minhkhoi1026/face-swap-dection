@@ -16,4 +16,4 @@ conda activate fsd
 
 pip install .
 
-python src/train.py -c configs/double_head_resnet.yml
+python src/train.py -c configs/train/double_head_resnet.yml
